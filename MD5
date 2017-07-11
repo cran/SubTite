@@ -1,0 +1,15 @@
+17c647c0beac75aaea919e5f72517e07 *DESCRIPTION
+654f62f375abd2938e3fddb21daf2fa6 *NAMESPACE
+c0a209f3a54dddaaca5719af2897ef0f *R/GetPriorMeans.R
+7160b8eb34e481a57410ff131e19047a *R/GetSubTite.R
+8d3fc30680258fdebe09b978b865b25c *R/GroupMCMCLN.R
+33c4820933aac1554eff94c0bb37b772 *R/RcppExports.R
+1967e14ad2e9a0c4d3122236b2418a0a *R/SimTrial.R
+1a4518f194f19489852333fe57fcec3d *man/GetPriorMeans.Rd
+5872bad0001d48ae25b4e5e8d9f2e995 *man/GetSubTite.Rd
+f4e9ec3cd9d38bd13615f79164ab1da4 *man/GroupMCMCLN.Rd
+11bb3682e28d1c014c580466ab91063c *man/SimTrial.Rd
+4d751a816a417548d9de308ba62c3ba7 *src/Makevars
+4d751a816a417548d9de308ba62c3ba7 *src/Makevars.win
+45e3d28e7bba3ef5008ab4bfb7c21bea *src/RcppExports.cpp
+bacc713c0a3b8209782b4bd7e3a29f6a *src/SUBGROUP.cpp
