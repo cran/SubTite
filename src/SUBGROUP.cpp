@@ -1146,7 +1146,7 @@ for(k=0;k<(J+1);k++){
     eta1=0;
 
     for(j=0;j<1000;j++){
-      eta1 = eta1 + DoseProb(k*nDose)>Target[k];
+      eta1 = eta1 + DoseProb(j,k*nDose)>Target[k];
     }
 
     eta1=eta1/1000;
@@ -1299,7 +1299,7 @@ ACC[i]=trialtime;
 
 
 if(Family==0){
-  Times(i)=R::rexp(Param1(Group,DoseStart[Group]));
+  Times(i)=R::rexp(Param1(Group,OptDose[Group]));
 }
 
 
