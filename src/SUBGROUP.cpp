@@ -115,7 +115,7 @@ double Like(arma::vec Y,  //Vector of Toxicity Times
 
   for(m=0;m<eta.n_rows;m++){
     for(k=0;k<a.n_rows;k++){
-      if(Group[m]==(k+2)){
+      if(Group[m]==(k+1)){
         eta[m] = a[k]+b[k]*Dose[m];
       }
     }
@@ -134,12 +134,17 @@ double Like(arma::vec Y,  //Vector of Toxicity Times
 
 
   for(m=0;m<eta.n_rows;m++){
+
     if(I[m]==1){
       //Not censored so we use the PDF
       LogL = LogL + eta[m] - log(1+exp(eta[m]));
 
     }else{
       LogL = LogL + log(1+(1-Y1[m])*exp(eta[m]))-log(1+exp(eta[m]));
+
+      //      LogL = LogL + log(1-Y1[m]*exp(eta[m])/(1+exp(eta[m])));
+
+
     }
 
   }
@@ -158,7 +163,6 @@ double Like(arma::vec Y,  //Vector of Toxicity Times
 
 
 
-
 double Like1(arma::vec Y,  //Vector of Toxicity Times
             arma::vec I,  // Vector of Censoring Indi
             arma::vec Dose, //Vector of Doses given to Patients
@@ -171,7 +175,9 @@ double Like1(arma::vec Y,  //Vector of Toxicity Times
             int npats //Number of patients currently
 ){
 
-  npats=npats-1;
+ // npats=npats-1;
+  //This may need to be commented out. Not totally sure here.
+
   double LogL = 0; // Will store likelihood to return
 
 
@@ -191,7 +197,7 @@ double Like1(arma::vec Y,  //Vector of Toxicity Times
 
   for(m=0;m<eta.n_rows;m++){
     for(k=0;k<a.n_rows;k++){
-      if(Group[m]==(k+2)){
+      if(Group[m]==(k+1)){
         eta[m] = a[k]+b[k]*Dose[m];
       }
     }
@@ -216,6 +222,10 @@ double Like1(arma::vec Y,  //Vector of Toxicity Times
 
     }else{
       LogL = LogL + log(1+(1-Y1[m])*exp(eta[m]))-log(1+exp(eta[m]));
+
+//      LogL = LogL + log(1-Y1[m]*exp(eta[m])/(1+exp(eta[m])));
+
+
     }
 
   }
@@ -265,6 +275,7 @@ List GroupMCMCLN(arma::vec Y,  //Vector of Toxicity Times
 ){
 
 
+
   //Innitialize parameters
   double mu=0;
   double slope=0;
@@ -307,7 +318,7 @@ List GroupMCMCLN(arma::vec Y,  //Vector of Toxicity Times
 
 
   //SetUp Storage Matrices
-  int B1=B;
+  int B1=B/2;
 
   arma::mat astore(B1,a.n_rows);
   arma::mat bstore =astore;
@@ -566,6 +577,11 @@ List GroupMCMCLN(arma::vec Y,  //Vector of Toxicity Times
 
 
 
+
+
+
+
+
 int Sample1(int Num){
   double U=as_scalar(arma::randu(1))*Num;
 
@@ -574,6 +590,10 @@ int Sample1(int Num){
   return(U);
 
 }
+
+
+
+
 
 
 
@@ -604,7 +624,7 @@ List SimTrial1(int nSims, //Number of Simulations to Run
 
 
 
-int Group=0;
+  int Group=0;
   //Important For loop integer
   int m =0; //For the inner MCMC looprep
   int i=0; //For the patient index
@@ -612,21 +632,24 @@ int Group=0;
 
 
   //First Fill out Target Vector
-int nDose=Dose.n_rows;
+  int nDose=Dose.n_rows;
 
 
   //Important Integer Quantities
   int B=2000; //Number of iterations for MCMC
 
+
+  int B1=B/2;
+
   //Make List objects we'll use
 
-//Trial Vectors
-arma::vec Y(Nmax);
-arma::vec I(Nmax);
-arma::vec Groups(Nmax);
-arma::vec Doses(Nmax);
-arma::vec Times(Nmax);
-arma::vec ACC(Nmax);
+  //Trial Vectors
+  arma::vec Y(Nmax);
+  arma::vec I(Nmax);
+  arma::vec Groups(Nmax);
+  arma::vec Doses(Nmax);
+  arma::vec Times(Nmax);
+  arma::vec ACC(Nmax);
 
 
   //Innitialize parameters for MCMC
@@ -650,7 +673,7 @@ arma::vec ACC(Nmax);
 
 
   //Check to see if Dosestart = 0 otherwise rearrange for c++
-DoseStart=DoseStart-1;
+  DoseStart=DoseStart-1;
 
 
   int StoreInx=0;
@@ -692,9 +715,8 @@ DoseStart=DoseStart-1;
   double sigvar=1;
 
   arma::vec etaG(J+1);
-  arma::mat DoseProb(1000,(J+1)*nDose);
+  arma::mat DoseProb(B1,(J+1)*nDose);
   arma::mat MeanDose(J+1,nDose);
-  int B1=999;
   double eta1=0;
   double DEC=0;
 
@@ -702,126 +724,154 @@ DoseStart=DoseStart-1;
   arma::vec NTox(J+1);
   arma::vec OptDose(J+1);
   arma::vec StoppedGroups(J+1);
-arma::vec SuspendGroups(J+1);
-arma::vec GLast(J+1);
-arma::vec nTreated(J+1);
-double stopped;
-arma::vec TrialTimes(nSims);
-arma::mat OptimalDoses(nSims,(J+1));
-arma::mat NTOX = OptimalDoses;
-arma::vec GroupVec(nDose);
+  arma::vec SuspendGroups(J+1);
+  arma::vec GLast(J+1);
+  arma::vec nTreated(J+1);
+  double stopped;
+  arma::vec TrialTimes(nSims);
+  arma::mat OptimalDoses(nSims,(J+1));
+  arma::mat NTOX = OptimalDoses;
+  arma::vec GroupVec(nDose);
+  arma::vec TriedGroups(J+1);
 
 
 
-arma::mat DoseStore(nSims,Nmax);
-arma::mat GroupStore(nSims,Nmax);
-arma::mat DoseTried((J+1),nDose);
+  arma::mat DoseStore(nSims,Nmax);
+  arma::mat GroupStore(nSims,Nmax);
+  arma::mat DoseTried((J+1),nDose);
+  arma::vec nTreated1(J+1);
+  nTreated1.zeros();
 
 
 
 
   //Wrap nreps around
-for(rep=0;rep<nSims;rep++){
+  for(rep=0;rep<nSims;rep++){
 
 
-  //Wrap i around
+    //Wrap i around
 
-MeanVec.zeros();
-DoseProb.zeros();
-  //Reset all trial vectors
-  trialtime=0;
-  stopped=0;
-  OptDose.zeros();
-  StoppedGroups.zeros();
-  SuspendGroups.zeros();
-  Y.zeros();
-  I.zeros();
-  Times.zeros();
-  ACC.zeros();
-  Groups.zeros();
-  Doses.zeros();
-  GLast.zeros()+10000;
-  nTreated.zeros();
-  DoseTried.zeros();
+    MeanVec.zeros();
+    //Reset all trial vectors
+    trialtime=0;
+    stopped=0;
+    OptDose.zeros();
+    StoppedGroups.zeros();
+    SuspendGroups.zeros();
+    TriedGroups.zeros();
+    Y.zeros();
+    I.zeros();
+    Times.zeros();
+    ACC.zeros();
+    Groups.zeros();
+    Doses.zeros();
+    GLast.zeros()+10000;
+    nTreated.zeros();
+    DoseTried.zeros();
 
-  NTox.zeros();
-
-
-
-
-  //Enroll the first patient
-
-  Group=Sample1((J+1));
-
-  Groups[0]=Group;
-
-  Doses[0]=Dose[DoseStart[Group]];
-
-  nTreated[Group]=nTreated[Group]+1;
-
-  ACC[0]=0;
-
-  if(Family==0){
-    Times(0)=R::rexp(Param1(Group,DoseStart[Group]));
-  }
+    NTox.zeros();
 
 
 
-if(Family==1){
-  Times[0]=R::rgamma(Param1(Group,DoseStart[Group]),Param2(Group,DoseStart[Group]));
-}
 
-if(Family==2){
-  Times[0]=R::rlnorm(Param1(Group,DoseStart[Group]),Param2(Group,DoseStart[Group]));
-}
+    //Enroll the first patient
 
-
-if(Family==3){
-  if(as_scalar(arma::randu(1))<Param1(Group,DoseStart[Group])){
-    Times[0]=as_scalar(arma::randu(1))*T1;
-  }else{
-    Times[0]=T1+1;
-  }
-}
-
-if(Family==4){
-  Times[0]=R::rweibull(Param1(Group,DoseStart[Group]),Param2(Group,DoseStart[Group]));
-}
-
-DoseTried(Group,DoseStart(Group))=1;
-
-
-  for(i=1;i<Nmax;i++){
-    //Start the Trial, Let's do this
-
-
-
-trialtime=trialtime+R::rexp(Accrue);
     Group=Sample1((J+1));
 
-    //Is this a new group? If so we automatically enroll them at starting dose
-    eta1=0;
-    for(j=0;j<i;j++){
-      if(Group==Groups[j]){
-        eta1=1;
-      }
+    Groups[0]=Group;
+
+    Doses[0]=Dose[DoseStart[Group]];
+
+    nTreated[Group]=nTreated[Group]+1;
+
+    ACC[0]=0;
+
+    if(Family==0){
+      Times(0)=R::rexp(Param1(Group,DoseStart[Group]));
     }
 
 
 
-    //Should we unsuspend any groups?
-   for(k=0;k<(J+1);k++){
-     if((trialtime-GLast[k])>TGroup){
-       //Followed the group long enough so let's unsuspend it.
-       SuspendGroups[k]=0;
+    if(Family==1){
+      Times[0]=R::rgamma(Param1(Group,DoseStart[Group]),1/Param2(Group,DoseStart[Group]));
+    }
+
+    if(Family==2){
+      Times[0]=R::rlnorm(Param1(Group,DoseStart[Group]),Param2(Group,DoseStart[Group]));
+    }
+
+
+    if(Family==3){
+      if(as_scalar(arma::randu(1))<Param1(Group,DoseStart[Group])){
+        Times[0]=as_scalar(arma::randu(1))*T1;
+      }else{
+        Times[0]=T1+1;
+      }
+    }
+
+    if(Family==4){
+      Times[0]=R::rweibull(Param1(Group,DoseStart[Group]),Param2(Group,DoseStart[Group]));
+    }
+
+    DoseTried(Group,DoseStart(Group))=1;
+
+
+    if(DoseStart[Group]==0){
+      nTreated1[Group]=nTreated1[Group]+1;
+    }
+
+    for(i=1;i<Nmax;i++){
+      //Start the Trial, Let's do this
+
+      DEC=0;
+
+      while(DEC==0){
+
+      trialtime=trialtime+R::rexp(1/Accrue);
+      Group=Sample1((J+1));
+
+      //Check if in new Group
+      if(TriedGroups[Group]==0){
+        DEC=1;
+        break;
+      }
+
+
+
+     //Should we unsuspend any groups?
+     for(k=0;k<(J+1);k++){
+       if((trialtime-GLast[k])>TGroup){
+         //Followed the group long enough so let's unsuspend it.
+         SuspendGroups[k]=0;
+       }
      }
-   }
-//Check to see if this is a new subgroup
-    if(eta1==0){
-      //Automatically enroll this patient
 
 
-      nTreated[Group]=nTreated[Group]+1;
+
+     //Check if in suspended group
+     if(SuspendGroups[Group]==0){
+       if(StoppedGroups[Group]==0){
+         DEC=1;
+       }
+     }
+
+      }
+
+
+      //Now its not in a stopped group or a subgroup so let's do our MCMC
+
+
+
+
+
+//Enrolling in a new subgroup
+if(TriedGroups[Group]==0){
+
+  nTreated[Group]=nTreated[Group]+1;
+
+      if(DoseStart[Group]==0){
+      nTreated1[Group]=nTreated1[Group]+1;
+      }
 
       Groups[i]=Group;
 
@@ -836,7 +886,7 @@ trialtime=trialtime+R::rexp(Accrue);
 
 
       if(Family==1){
-        Times[i]=R::rgamma(Param1(Group,DoseStart[Group]),Param2(Group,DoseStart[Group]));
+        Times[i]=R::rgamma(Param1(Group,DoseStart[Group]),1/Param2(Group,DoseStart[Group]));
       }
 
       if(Family==2){
@@ -858,777 +908,272 @@ trialtime=trialtime+R::rexp(Accrue);
 
 
       DoseTried(Group,DoseStart(Group))=1;
-
-
-    }else{
-     //Check if group is in a suspended group
-      if(SuspendGroups[Group]==0){
-        DEC=0;
-        //while loop to skip certain patients.
-
-while(DEC==0){
-//If this patient group is
-
-I.zeros();
-
-      //Setup Y
-      for(k=0;k<i;k++){
-Y[k]=min1(min1(Times[k],trialtime-ACC[k]),T1);
-        if(Times[k]<T1){
-          I[k]=1;
-        }
-      }
-
-  //Inner MCMC loop, only compute neccessary quantities. Reset counters
-   NumA=2;
-     NumB=2;
-     IntA=1;
-     IntB = 1;
-     NumMu = 2;
-     NumSlope=2;
-     IntMu=1;
-     IntSlope=1;
-     avar=1;
-     bvar=1;
-     muvar=1;
-     slopevar=1;
-     NumSig=2;
-     IntSig=1;
-     sigvar=1;
-     a.zeros();
-     b.zeros();
-
-
-  for(m=0;m<B;m++){
-
-    if(m<(B/2 + 2)){
-      if(m%250==0){
-        if((IntA/NumA)>.8){
-          avar=avar*2;
-        }
-
-        if((IntA/NumA)<.2){
-          avar=avar/2;
-        }
-
-
-        if((IntSig/NumSig)>.8){
-          sigvar=sigvar*2;
-        }
-
-        if((IntSig/NumSig)<.2){
-          sigvar=sigvar/2;
-        }
-
-
-
-
-        if((IntB/NumB)>.8){
-          bvar=bvar*2;
-        }
-
-        if((IntB/NumB)<.2){
-          bvar=bvar/2;
-        }
-
-
-        if((IntMu/NumMu)>.8){
-          muvar=muvar*2;
-        }
-
-        if((IntMu/NumMu)<.2){
-          muvar=muvar/2;
-        }
-
-
-        if((IntSlope/NumSlope)>.8){
-          slopevar=slopevar*2;
-        }
-
-        if((IntSlope/NumSlope)<.2){
-          slopevar=slopevar/2;
-        }
-
-
-
-        zprop[0]=IntA/NumA;
-        zprop[1]=IntB/NumB;
-        zprop[2]=IntMu/NumMu;
-        zprop[3]=IntSlope/NumSlope;
-        zprop[4]=IntSig/NumSig;
-        //   Rf_PrintValue(zprop);
-
-
-        NumA=2;
-        NumB=2;
-        IntA=1;
-        IntB = 1;
-        NumMu = 2;
-        NumSlope=2;
-        IntMu=1;
-        IntSlope=1;
-        IntSig=1;
-        NumSig=2;
-
-        zprop[0]=muvar;
-        zprop[1]=slopevar;
-        zprop[2]=avar;
-        zprop[3]=bvar;
-        zprop[4]=sigvar;
-        //  Rf_PrintValue(zprop);
-
-
-
-
-      }
-    }
-
-
-
-    for(k=0;k<aprop.n_rows;k++){
-
-      aprop=a;
-      aprop(k)=as_scalar(arma::randn(1))*avar + a(k);
-
-
-
-
-
-
-      alpha =    .5*pow((a[k]-MeanInts[k]),2) -.5*pow((aprop[k]-MeanInts[k]),2) +  Like1(Y, I,  Doses, Groups,  mu,slope, aprop, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
-
-
-      U=log(as_scalar(arma::randu(1)));
-
-
-      if(U<alpha){
-        a(k)=aprop(k);
-        IntA=IntA+1;
-      }
-
-      NumA=NumA+1;
-
-
-
-    }
-    //Now do a MH step for the slope
-
-    for(k=0;k<aprop.size();k++){
-
-      bprop=b;
-      bprop[k]=max1(as_scalar(arma::randn(1))*bvar + b[k],-slope);
-
-
-
-
-
-      alpha =  -.5*pow((bprop[k]-MeanSlopes[k]),2) +.5*pow((b[k]-MeanSlopes[k]),2)  +  Like1(Y, I,  Doses, Groups,  mu,slope, a, bprop, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
-
-
-      U=log(as_scalar(arma::randu(1)));
-
-      z9[0]=alpha;
-
-      //  Rf_PrintValue(wrap(z9));
-
-      if(U<alpha){
-        b[k]=bprop[k];
-        IntB=IntB+1;
-      }
-      NumB=NumB+1;
-
-    }
-
-
-
-
-
-    Munew = mu + as_scalar(arma::randn(1))*muvar;
-
-
-
-    alpha= .5*pow((mu-meanmu),2) -.5*pow((Munew-meanmu),2)+   Like1(Y, I,  Doses, Groups,  Munew,slope, a, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
-
-
-
-
-    U=log(as_scalar(arma::randu(1)));
-
-    if(U<alpha){
-      mu=Munew;
-      IntMu=IntMu+1;
-    }
-
-    NumMu=NumMu+1;
-
-
-
-
-
-    //Now do a MH step for the slope
-
-    slopenew = max1(slope + as_scalar(arma::randn(1))*slopevar,.01);
-
-
-
-
-    alpha = .5*pow((slope-meanslope),2) -.5*pow((slopenew-meanslope),2)     +    Like1(Y, I,  Doses, Groups,  mu,slopenew, a, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
-
-
-
-    U=log(as_scalar(arma::randu(1)));
-
-    if(U<alpha){
-      slope=slopenew;
-      IntSlope=IntSlope+1;
-    }
-    NumSlope=NumSlope+1;
-
-
-
-
-
-    if(m>B1){
-    //Make OptDose and StoppedGroups
-StoreInx=m-B1-1;
-
-    //Fill in Big matrix of dose toxicity probabilities for each subgroup and dose
-    //First nDose
-
-
-for(k=0;k<(J+1);k++){
-
-  for(j=0;j<nDose;j++){
-  eta1=0;
-
-      if(k>0){
-        eta1 = a[k-1]+b[k-1]*Dose[j];
-      }
-
-
-    //For all groups add the intercept and slope*Groups
-    eta1=eta1+mu+slope*Dose[j];
-
-      eta1=exp(eta1);
-
-      if(eta1>100000){
-        DoseProb(StoreInx, k*nDose+j) = 1;
-
-      }else{
-        DoseProb(StoreInx, k*nDose+j) = eta1/(1+eta1);
-
-      }
-
-
-
-  }
-
-
-}
-//Now we have a matrix containing our sampled dose probabilities
-
-
-
-
-
-
-
-  }
-
-//End MCMC
-  }
-
-
-
-
-  //Do we have a stopped group?
-  for(k=0;k<(J+1);k++){
-    eta1=0;
-
-    for(j=0;j<1000;j++){
-      eta1 = eta1 + DoseProb(j,k*nDose)>Target[k];
-    }
-
-    eta1=eta1/1000;
-    if(eta1>Upper[k]){
-      StoppedGroups[k]=1;
-    }
-
-  }
-
-
-
-  //If we don't have at least 3 patients enrolled, let's drop the Stopped Group
-for(k=0;k<(J+1);k++){
-  if(nTreated[k]<3){
-    StoppedGroups[k]=0;
-  }
-}
-
-//Should we stop the trial?
-if(sum(StoppedGroups)==(J+1)){
-  break;
-  stopped=1;
-}
-
-
-
-
-  if(StoppedGroups[Group]==0){
-    //Enroll this patient
-    DEC=1;
-  }else{
-    //Contiunue to Accrue patients in the trial
-    trialtime=trialtime+R::rexp(Accrue);
-    Group=Sample1((J+1));
-  }
-
-
-
-    }
-
-
-
-      }else{
-        //Try Next Patient
-        //Contiunue to Accrue patients in the trial
-        trialtime=trialtime+R::rexp(Accrue);
-        Group=Sample1((J+1));
-
-
-
-        //Should we unsuspend any groups?
-        for(k=0;k<(J+1);k++){
-          if((trialtime-GLast[k])>TGroup){
-            //Followed the group long enough so let's unsuspend it.
-            SuspendGroups[k]=0;
-          }
-        }
-
-
-
-      }
-
-
-
-//Assign Next Dose
-//Whats the optimal dose?
-
-
-//Get MeanVec
-for(k=0;k<(J+1);k++){
-  for(j=0;j<nDose;j++){
-    MeanVec(k,j) = sum(DoseProb.col(k*nDose+j))/1000;
-  }
-
-}
-//Now we have the mean vector
-
-
-
-//Determine Optimal Doses
-for(k=0;k<(J+1);k++){
-
-  eta1=MinVec(abs(MeanVec.row(k).t()-Target(k)));
-  j=0;
-
-
-
-
-GroupVec = abs(MeanVec.row(k).t()-Target(k));
-
-  while(GroupVec[j]!=eta1 ){
-    j++;
-    //z9[0]=j;
-    //z9[1]=abs(MeanVec.row(k).t()-Target(k))[j];
-    //Rf_PrintValue(z9);
-    //Loop Proceeds until the minimum difference is reached
-  }
-
-  OptDose[k]=j;
-
-
-
-}
-//Now we have the subgroup specific optimal doses in the vector OptDose
-
-
-
-//Now let's see if the dose is bigger than the largest dose.
-if(OptDose[Group]>=nDose){
- OptDose[Group]=nDose-1;
-}
-
-
-
-//Is this dose bigger than the dose higher than what's been tried?
-if(DoseTried(Group,OptDose[Group])==0){
-  j=OptDose[Group];
-
-  while(DoseTried(Group,j)==0){
-    j=j-1;
-  }
-
-  OptDose[Group]=j+1;
-
-}
-
-
-
-
-//Assign Patient to subgroup, optdose, add accrual time.
-
-
-Groups[i]=Group;
-nTreated[Group]=nTreated[Group]+1;
-
-//If this is the 3rd patient treated in this subgroup, suspend accrual for TGroup
-if(nTreated[Group]==3){
-  SuspendGroups[Group]=1;
-  GLast[Group]=trialtime;
-}
-
-
-
-Doses[i]=Dose[OptDose[Group]];
-
-nTreated[Group]=nTreated[Group]+1;
-
-ACC[i]=trialtime;
-//Based on the Group and Optimal dose, randomly generate the next patient Data
-
-
-if(Family==0){
-  Times(i)=R::rexp(Param1(Group,OptDose[Group]));
-}
-
-
-
-if(Family==1){
-  Times[i]=R::rgamma(Param1(Group,OptDose[Group]),Param2(Group,OptDose[Group]));
-}
-
-if(Family==2){
-  Times[i]=R::rlnorm(Param1(Group,OptDose[Group]),Param2(Group,OptDose[Group]));
-}
-
-
-if(Family==3){
-  if(as_scalar(arma::randu(1))<Param1(Group,OptDose[Group])){
-    Times[i]=as_scalar(arma::randu(1))*T1;
-  }else{
-    Times[i]=T1+1;
-  }
-}
-
-if(Family==4){
-  Times[i]=R::rweibull(Param1(Group,OptDose[Group]),Param2(Group,OptDose[Group]));
-}
-
-
-DoseTried(Group,OptDose(Group))=1;
-
-
-
-
-
-
-    }
-
-
-
-
-    }
-
-
-//Now let's make the final decision.
-if(stopped==1){
-  //The trial Ended Early, i-1 is the index of the last patient enrolled.
-
-  for(k=0;k<i;k++){
-    for(j=0;j<(J+1);j++){
-     if(Groups[k]==j){
-       NTox[j]=NTox[j]+I[k];
-     }
-    }
-  }
-
-
-  //All Optimal Doses are -1
-  for(k=0;k<(J+1);k++){
-    OptDose[k]=-1;
-  }
-
+      TriedGroups[Group]=1;
 
 }else{
-  //The trial did NOT end early. Follow patients out until end of trial and get the optimal doses
-  trialtime=trialtime+T1;
+//Not in a new subgroup, let's do our MCMC
 
+DEC=0;
 
+  while(DEC==0){
+    //If this patient group is
 
-  I.zeros();
+    I.zeros();
+    Y.zeros();
 
-  //Setup Y
-  for(k=0;k<Nmax;k++){
-    Y[k]=min1(Times[k],T1);
-    if(Times[k]<T1){
-      I[k]=1;
-    }
-  }
-
-
-
-
-
-  //Inner MCMC loop, only compute neccessary quantities. Reset counters
-  NumA=2;
-  NumB=2;
-  IntA=1;
-  IntB = 1;
-  NumMu = 2;
-  NumSlope=2;
-  IntMu=1;
-  IntSlope=1;
-  avar=1;
-  bvar=1;
-  muvar=1;
-  slopevar=1;
-  NumSig=2;
-  IntSig=1;
-  sigvar=1;
-  a.zeros();
-  b.zeros();
-  MeanVec.zeros();
-  GroupVec.zeros();
-
-
-  for(m=0;m<B;m++){
-
-    if(m<(B/2 + 2)){
-      if(m%250==0){
-        if((IntA/NumA)>.8){
-          avar=avar*2;
-        }
-
-        if((IntA/NumA)<.2){
-          avar=avar/2;
-        }
-
-
-        if((IntSig/NumSig)>.8){
-          sigvar=sigvar*2;
-        }
-
-        if((IntSig/NumSig)<.2){
-          sigvar=sigvar/2;
-        }
-
-
-
-
-        if((IntB/NumB)>.8){
-          bvar=bvar*2;
-        }
-
-        if((IntB/NumB)<.2){
-          bvar=bvar/2;
-        }
-
-
-        if((IntMu/NumMu)>.8){
-          muvar=muvar*2;
-        }
-
-        if((IntMu/NumMu)<.2){
-          muvar=muvar/2;
-        }
-
-
-        if((IntSlope/NumSlope)>.8){
-          slopevar=slopevar*2;
-        }
-
-        if((IntSlope/NumSlope)<.2){
-          slopevar=slopevar/2;
-        }
-
-
-
-        zprop[0]=IntA/NumA;
-        zprop[1]=IntB/NumB;
-        zprop[2]=IntMu/NumMu;
-        zprop[3]=IntSlope/NumSlope;
-        zprop[4]=IntSig/NumSig;
-        //   Rf_PrintValue(zprop);
-
-
-        NumA=2;
-        NumB=2;
-        IntA=1;
-        IntB = 1;
-        NumMu = 2;
-        NumSlope=2;
-        IntMu=1;
-        IntSlope=1;
-        IntSig=1;
-        NumSig=2;
-
-        zprop[0]=muvar;
-        zprop[1]=slopevar;
-        zprop[2]=avar;
-        zprop[3]=bvar;
-        zprop[4]=sigvar;
-        //  Rf_PrintValue(zprop);
-
-
-
-
+    //Setup Y
+    for(k=0;k<i;k++){
+      Y[k]=min1(min1(Times[k],trialtime-ACC[k]),T1);
+      if(Times[k]==Y[k]){
+        I[k]=1;
       }
     }
 
-
-
-    for(k=0;k<aprop.n_rows;k++){
-
-      aprop=a;
-      aprop(k)=as_scalar(arma::randn(1))*avar + a(k);
-
-
-
-
-
-
-      alpha =    .5*pow((a[k]-MeanInts[k]),2) -.5*pow((aprop[k]-MeanInts[k]),2) +  Like1(Y, I,  Doses, Groups,  mu,slope, aprop, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
-
-
-      U=log(as_scalar(arma::randu(1)));
-
-
-      if(U<alpha){
-        a(k)=aprop(k);
-        IntA=IntA+1;
-      }
-
-      NumA=NumA+1;
-
-
-
-    }
-    //Now do a MH step for the slope
-
-    for(k=0;k<aprop.size();k++){
-
-      bprop=b;
-      bprop[k]=max1(as_scalar(arma::randn(1))*bvar + b[k],-slope);
-
-
-
-
-
-      alpha =  -.5*pow((bprop[k]-MeanSlopes[k]),2) +.5*pow((b[k]-MeanSlopes[k]),2)  +  Like1(Y, I,  Doses, Groups,  mu,slope, a, bprop, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
-
-
-      U=log(as_scalar(arma::randu(1)));
-
-      z9[0]=alpha;
-
-      //  Rf_PrintValue(wrap(z9));
-
-      if(U<alpha){
-        b[k]=bprop[k];
-        IntB=IntB+1;
-      }
-      NumB=NumB+1;
-
-    }
-
-
-
-
-
-    Munew = mu + as_scalar(arma::randn(1))*muvar;
-
-
-
-    alpha= .5*pow((mu-meanmu),2) -.5*pow((Munew-meanmu),2)+   Like1(Y, I,  Doses, Groups,  Munew,slope, a, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
-
-
-
-
-    U=log(as_scalar(arma::randu(1)));
-
-    if(U<alpha){
-      mu=Munew;
-      IntMu=IntMu+1;
-    }
-
-    NumMu=NumMu+1;
-
-
-
-
-
-    //Now do a MH step for the slope
-
-    slopenew = max1(slope + as_scalar(arma::randn(1))*slopevar,.01);
-
-
-
-
-    alpha = .5*pow((slope-meanslope),2) -.5*pow((slopenew-meanslope),2)     +    Like1(Y, I,  Doses, Groups,  mu,slopenew, a, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
-
-
-
-    U=log(as_scalar(arma::randu(1)));
-
-    if(U<alpha){
-      slope=slopenew;
-      IntSlope=IntSlope+1;
-    }
-    NumSlope=NumSlope+1;
-
-
-
-
-
-    if(m>B1){
-      //Make OptDose and StoppedGroups
-      StoreInx=m-B1-1;
-
-      //Fill in Big matrix of dose toxicity probabilities for each subgroup and dose
-      //First nDose
-
-
-      for(k=0;k<(J+1);k++){
-
-        for(j=0;j<nDose;j++){
-          eta1=0;
-
-          if(k>0){
-            eta1 = a[k-1]+b[k-1]*Dose[j];
+    //Inner MCMC loop, only compute neccessary quantities. Reset counters
+    NumA=2;
+    NumB=2;
+    IntA=1;
+    IntB = 1;
+    NumMu = 2;
+    NumSlope=2;
+    IntMu=1;
+    IntSlope=1;
+    avar=1;
+    bvar=1;
+    muvar=1;
+    slopevar=1;
+    NumSig=2;
+    IntSig=1;
+    sigvar=1;
+    a.zeros();
+    b.zeros();
+    mu=0;
+    slope=0;
+
+
+    //Perform MCMC that we'll need for dose assignment
+    for(m=0;m<B;m++){
+
+      if(m<(B/2 + 2)){
+        if(m%250==0){
+          if((IntA/NumA)>.8){
+            avar=avar*2;
+          }
+
+          if((IntA/NumA)<.2){
+            avar=avar/2;
           }
 
 
-          //For all groups add the intercept and slope*Groups
-          eta1=eta1+mu+slope*Dose[j];
+          if((IntSig/NumSig)>.8){
+            sigvar=sigvar*2;
+          }
 
-          eta1=exp(eta1);
-
-          if(eta1>100000){
-            DoseProb(StoreInx, k*nDose+j) = 1;
-
-          }else{
-            DoseProb(StoreInx, k*nDose+j) = eta1/(1+eta1);
-
+          if((IntSig/NumSig)<.2){
+            sigvar=sigvar/2;
           }
 
 
 
+
+          if((IntB/NumB)>.8){
+            bvar=bvar*2;
+          }
+
+          if((IntB/NumB)<.2){
+            bvar=bvar/2;
+          }
+
+
+          if((IntMu/NumMu)>.8){
+            muvar=muvar*2;
+          }
+
+          if((IntMu/NumMu)<.2){
+            muvar=muvar/2;
+          }
+
+
+          if((IntSlope/NumSlope)>.8){
+            slopevar=slopevar*2;
+          }
+
+          if((IntSlope/NumSlope)<.2){
+            slopevar=slopevar/2;
+          }
+
+
+
+
+
+          NumA=2;
+          NumB=2;
+          IntA=1;
+          IntB = 1;
+          NumMu = 2;
+          NumSlope=2;
+          IntMu=1;
+          IntSlope=1;
+          IntSig=1;
+          NumSig=2;
+
+          zprop[0]=muvar;
+          zprop[1]=slopevar;
+          zprop[2]=avar;
+          zprop[3]=bvar;
+          zprop[4]=sigvar;
+          //  Rf_PrintValue(zprop);
+
+
+
+
         }
+      }
+
+
+
+
+      for(k=0;k<aprop.n_rows;k++){
+
+        aprop=a;
+        aprop(k)=as_scalar(arma::randn(1))*avar + a(k);
+
+
+
+
+
+
+        alpha =    .5*pow((a[k]-MeanInts[k]),2) -.5*pow((aprop[k]-MeanInts[k]),2) +  Like1(Y, I,  Doses, Groups,  mu,slope, aprop, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
+
+
+        U=log(as_scalar(arma::randu(1)));
+
+
+        if(U<alpha){
+          a(k)=aprop(k);
+          IntA=IntA+1;
+        }
+
+        NumA=NumA+1;
+
 
 
       }
-      //Now we have a matrix containing our sampled dose probabilities
+      //Now do a MH step for the slope
+
+      for(k=0;k<aprop.size();k++){
+
+        bprop=b;
+        bprop[k]=max1(as_scalar(arma::randn(1))*bvar + b[k],-slope);
+
+
+
+
+
+        alpha =  -.5*pow((bprop[k]-MeanSlopes[k]),2) +.5*pow((b[k]-MeanSlopes[k]),2)  +  Like1(Y, I,  Doses, Groups,  mu,slope, a, bprop, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
+
+
+        U=log(as_scalar(arma::randu(1)));
+
+        z9[0]=alpha;
+
+        //  Rf_PrintValue(wrap(z9));
+
+        if(U<alpha){
+          b[k]=bprop[k];
+          IntB=IntB+1;
+        }
+        NumB=NumB+1;
+
+      }
+
+
+
+
+
+      Munew = mu + as_scalar(arma::randn(1))*muvar;
+
+
+
+      alpha= .5*pow((mu-meanmu),2) -.5*pow((Munew-meanmu),2)+   Like1(Y, I,  Doses, Groups,  Munew,slope, a, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
+
+
+
+
+      U=log(as_scalar(arma::randu(1)));
+
+      if(U<alpha){
+        mu=Munew;
+        IntMu=IntMu+1;
+      }
+
+      NumMu=NumMu+1;
+
+
+
+
+
+      //Now do a MH step for the slope
+
+      slopenew = max1(slope + as_scalar(arma::randn(1))*slopevar,.01);
+
+
+
+
+      alpha = .5*pow((slope-meanslope),2) -.5*pow((slopenew-meanslope),2)     +    Like1(Y, I,  Doses, Groups,  mu,slopenew, a, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
+
+
+
+      U=log(as_scalar(arma::randu(1)));
+
+      if(U<alpha){
+        slope=slopenew;
+        IntSlope=IntSlope+1;
+      }
+      NumSlope=NumSlope+1;
+
+
+
+
+
+      if(m>(B-B1-1)){
+        //Make OptDose and StoppedGroups
+        StoreInx=m-B1;
+
+        //Fill in Big matrix of dose toxicity probabilities for each subgroup and dose
+        //First nDose
+
+
+        for(k=0;k<(J+1);k++){
+
+          for(j=0;j<nDose;j++){
+            eta1=0;
+
+            if(k>0){
+              eta1 = a[k-1]+b[k-1]*Dose[j];
+            }
+
+
+            //For all groups add the intercept and slope*Groups
+            eta1=eta1+mu+slope*Dose[j];
+
+            eta1=exp(eta1);
+
+            if(eta1>100000){
+              DoseProb(StoreInx, k*nDose+j) = 1;
+
+            }else{
+              DoseProb(StoreInx, k*nDose+j) = eta1/(1+eta1);
+
+            }
+
+
+
+          }
+
+
+        }
+        //Now we have a matrix containing our sampled dose probabilities
 
 
 
@@ -1636,34 +1181,85 @@ if(stopped==1){
 
 
 
+      }
 
+      //End MCMC
+    }
+
+
+
+    StoppedGroups.zeros();
+    //Do we have a stopped group?
+    for(k=0;k<(J+1);k++){
+      eta1=0;
+
+      for(j=0;j<1000;j++){
+        eta1 = eta1 + DoseProb(j,k*nDose)>Target[k];
+      }
+
+      eta1=eta1/1000;
+      if(eta1>Upper[k]){
+        StoppedGroups[k]=1;
+      }
 
     }
 
-    //End MCMC
+
+
+    //If we don't have at least 3 patients enrolled at the lowest dose, let's drop the Stopped Group
+    for(k=0;k<(J+1);k++){
+      if(nTreated1[k]<3){
+        StoppedGroups[k]=0;
+      }
+    }
+
+    //Should we stop the trial?
+    if(sum(StoppedGroups)==(J+1)){
+      break;
+      stopped=1;
+    }
+
+
+
+
+    if(StoppedGroups[Group]==0){
+      //Enroll this patient
+      DEC=1;
+    }else{
+
+      trialtime=trialtime+R::rexp(1/Accrue);
+      Group=Sample1((J+1));
+
+    }
+
+
+
+
+
   }
 
+  //Ok now let's enroll this patient, Whats the Optimal Dose
 
-//Get Optimal Dose
-
-
-
-  //Get MeanVec
   for(k=0;k<(J+1);k++){
     for(j=0;j<nDose;j++){
-      MeanVec(k,j) = sum(DoseProb.col(k*nDose+j))/1000;
+      MeanVec(k,j) = sum(DoseProb.col(k*nDose+j))/DoseProb.n_rows;
     }
 
   }
-  //Now we have the mean vector
+
+
+
 
   //Determine Optimal Doses
   for(k=0;k<(J+1);k++){
 
-    eta1=MinVec(abs(MeanVec.row(k).t()-Target[k]));
+    eta1=MinVec(abs(MeanVec.row(k).t()-Target(k)));
     j=0;
 
-    GroupVec = abs(MeanVec.row(k).t()-Target[k]);
+
+
+
+    GroupVec = abs(MeanVec.row(k).t()-Target(k));
 
     while(GroupVec[j]!=eta1 ){
       j++;
@@ -1675,59 +1271,560 @@ if(stopped==1){
 
 
   }
+  //Now we have the subgroup specific optimal doses in the vector OptDose
 
 
-  //If any optimal doses bigger than biggest, let's drop it to nDose
 
 
-  for(k=0;k<(J+1);k++){
-    if(OptDose[k]>=nDose){
-      OptDose[k]=nDose-1;
+  //Now let's see if the dose is bigger than the largest dose.
+  if(OptDose[Group]>=nDose){
+    OptDose[Group]=nDose-1;
+  }
+
+
+
+  //Is this dose bigger than the dose higher than what's been tried?
+  if(DoseTried(Group,OptDose[Group])==0){
+    j=0;
+
+    while(DoseTried(Group,j)==1){
+      j++;
     }
+
+    OptDose[Group]=j;
+
   }
 
 
 
 
-  //Num Toxicities
-  for(k=0;k<Nmax;k++){
-    for(j=0;j<(J+1);j++){
-      if(Groups[k]==j){
-        NTox[j]=NTox[j]+I[k];
+
+
+  //Assign Patient to subgroup, optdose, add accrual time.
+
+  Groups[i]=Group;
+  if(OptDose[Group]==0){
+    //If we assign one at the lowest dose add this
+  nTreated1[Group]=nTreated1[Group]+1;
+  }
+nTreated[Group]=nTreated[Group]+1;
+
+  //If this is the 3rd patient treated in this subgroup with the lowest dose, suspend accrual for TGroup
+  if(nTreated[Group]==3){
+    SuspendGroups[Group]=1;
+    GLast[Group]=trialtime;
+  }
+
+
+
+  Doses[i]=Dose[OptDose[Group]];
+
+
+  ACC[i]=trialtime;
+  //Based on the Group and Optimal dose, randomly generate the next patient Data
+
+
+  if(Family==0){
+    Times(i)=R::rexp(Param1(Group,OptDose[Group]));
+  }
+
+
+
+  if(Family==1){
+    Times[i]=R::rgamma(Param1(Group,OptDose[Group]),Param2(Group,OptDose[Group]));
+  }
+
+  if(Family==2){
+    Times[i]=R::rlnorm(Param1(Group,OptDose[Group]),Param2(Group,OptDose[Group]));
+  }
+
+
+  if(Family==3){
+    if(as_scalar(arma::randu(1))<Param1(Group,OptDose[Group])){
+      Times[i]=as_scalar(arma::randu(1))*T1;
+    }else{
+      Times[i]=T1+1;
+    }
+  }
+
+  if(Family==4){
+    Times[i]=R::rweibull(Param1(Group,OptDose[Group]),Param2(Group,OptDose[Group]));
+  }
+
+
+  DoseTried(Group,OptDose(Group))=1;
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+ //End of the i loop, now we have ALL the patients
+    }
+
+
+
+
+    //Now let's make the final decision.
+    if(stopped==1){
+      //The trial Ended Early, i-1 is the index of the last patient enrolled.
+
+      for(k=0;k<i;k++){
+        for(j=0;j<(J+1);j++){
+          if(Groups[k]==j){
+            NTox[j]=NTox[j]+I[k];
+          }
+        }
       }
+
+
+      //All Optimal Doses are -1
+      for(k=0;k<(J+1);k++){
+        OptDose[k]=-1;
+      }
+
+
+    }else{
+      //The trial did NOT end early. Follow patients out until end of trial and get the optimal doses
+      trialtime=trialtime+T1;
+
+
+      Y.zeros();
+      I.zeros();
+
+      //Setup Y
+      for(k=0;k<Nmax;k++){
+        Y[k]=min1(min1(Times[k],trialtime-ACC[k]),T1);
+
+        Y[k]=min1(Times[k],T1);
+
+
+        if(Times[k]==Y[k]){
+          I[k]=1;
+        }
+      }
+
+
+
+
+
+      //Inner MCMC loop, only compute neccessary quantities. Reset counters
+      NumA=2;
+      NumB=2;
+      IntA=1;
+      IntB = 1;
+      NumMu = 2;
+      NumSlope=2;
+      IntMu=1;
+      IntSlope=1;
+      avar=1;
+      bvar=1;
+      muvar=1;
+      slopevar=1;
+      NumSig=2;
+      IntSig=1;
+      sigvar=1;
+      a.zeros();
+      b.zeros();
+      MeanVec.zeros();
+      GroupVec.zeros();
+      mu=0;
+      slope=0;
+
+      for(m=0;m<B;m++){
+
+        if(m<(B/2 + 2)){
+          if(m%250==0){
+            if((IntA/NumA)>.8){
+              avar=avar*2;
+            }
+
+            if((IntA/NumA)<.2){
+              avar=avar/2;
+            }
+
+
+            if((IntSig/NumSig)>.8){
+              sigvar=sigvar*2;
+            }
+
+            if((IntSig/NumSig)<.2){
+              sigvar=sigvar/2;
+            }
+
+
+
+
+            if((IntB/NumB)>.8){
+              bvar=bvar*2;
+            }
+
+            if((IntB/NumB)<.2){
+              bvar=bvar/2;
+            }
+
+
+            if((IntMu/NumMu)>.8){
+              muvar=muvar*2;
+            }
+
+            if((IntMu/NumMu)<.2){
+              muvar=muvar/2;
+            }
+
+
+            if((IntSlope/NumSlope)>.8){
+              slopevar=slopevar*2;
+            }
+
+            if((IntSlope/NumSlope)<.2){
+              slopevar=slopevar/2;
+            }
+
+
+
+            zprop[0]=IntA/NumA;
+            zprop[1]=IntB/NumB;
+            zprop[2]=IntMu/NumMu;
+            zprop[3]=IntSlope/NumSlope;
+            zprop[4]=IntSig/NumSig;
+            //   Rf_PrintValue(zprop);
+
+
+            NumA=2;
+            NumB=2;
+            IntA=1;
+            IntB = 1;
+            NumMu = 2;
+            NumSlope=2;
+            IntMu=1;
+            IntSlope=1;
+            IntSig=1;
+            NumSig=2;
+
+            zprop[0]=muvar;
+            zprop[1]=slopevar;
+            zprop[2]=avar;
+            zprop[3]=bvar;
+            zprop[4]=sigvar;
+            //  Rf_PrintValue(zprop);
+
+
+
+
+          }
+        }
+
+
+
+        for(k=0;k<aprop.n_rows;k++){
+
+          aprop=a;
+          aprop(k)=as_scalar(arma::randn(1))*avar + a(k);
+
+
+
+
+
+
+          alpha =    .5*pow((a[k]-MeanInts[k]),2) -.5*pow((aprop[k]-MeanInts[k]),2) +  Like1(Y, I,  Doses, Groups,  mu,slope, aprop, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
+
+
+          U=log(as_scalar(arma::randu(1)));
+
+
+          if(U<alpha){
+            a(k)=aprop(k);
+            IntA=IntA+1;
+          }
+
+          NumA=NumA+1;
+
+
+
+        }
+        //Now do a MH step for the slope
+
+        for(k=0;k<aprop.size();k++){
+
+          bprop=b;
+          bprop[k]=max1(as_scalar(arma::randn(1))*bvar + b[k],-slope);
+
+
+
+
+
+          alpha =  -.5*pow((bprop[k]-MeanSlopes[k]),2) +.5*pow((b[k]-MeanSlopes[k]),2)  +  Like1(Y, I,  Doses, Groups,  mu,slope, a, bprop, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
+
+
+          U=log(as_scalar(arma::randu(1)));
+
+          z9[0]=alpha;
+
+          //  Rf_PrintValue(wrap(z9));
+
+          if(U<alpha){
+            b[k]=bprop[k];
+            IntB=IntB+1;
+          }
+          NumB=NumB+1;
+
+        }
+
+
+
+
+
+        Munew = mu + as_scalar(arma::randn(1))*muvar;
+
+
+
+        alpha= .5*pow((mu-meanmu),2) -.5*pow((Munew-meanmu),2)+   Like1(Y, I,  Doses, Groups,  Munew,slope, a, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
+
+
+
+
+        U=log(as_scalar(arma::randu(1)));
+
+        if(U<alpha){
+          mu=Munew;
+          IntMu=IntMu+1;
+        }
+
+        NumMu=NumMu+1;
+
+
+
+
+
+        //Now do a MH step for the slope
+
+        slopenew = max1(slope + as_scalar(arma::randn(1))*slopevar,.01);
+
+
+
+
+        alpha = .5*pow((slope-meanslope),2) -.5*pow((slopenew-meanslope),2)     +    Like1(Y, I,  Doses, Groups,  mu,slopenew, a, b, sig,i) -  Like1(Y, I,  Doses, Groups,  mu,slope, a, b, sig,i);
+
+
+
+        U=log(as_scalar(arma::randu(1)));
+
+        if(U<alpha){
+          slope=slopenew;
+          IntSlope=IntSlope+1;
+        }
+        NumSlope=NumSlope+1;
+
+
+
+
+
+        if(m>(B-B1-1)){
+          //Make OptDose and StoppedGroups
+          StoreInx=m-B1;
+
+          //Fill in Big matrix of dose toxicity probabilities for each subgroup and dose
+          //First nDose
+
+
+          for(k=0;k<(J+1);k++){
+
+            for(j=0;j<nDose;j++){
+              eta1=0;
+
+              if(k>0){
+                eta1 = a[k-1]+b[k-1]*Dose[j];
+              }
+
+
+              //For all groups add the intercept and slope*Groups
+              eta1=eta1+mu+slope*Dose[j];
+
+              eta1=exp(eta1);
+
+              if(eta1>100000){
+                DoseProb(StoreInx, k*nDose+j) = 1;
+
+              }else{
+                DoseProb(StoreInx, k*nDose+j) = eta1/(1+eta1);
+
+              }
+
+
+
+            }
+
+
+          }
+          //Now we have a matrix containing our sampled dose probabilities
+
+
+
+
+
+
+
+
+
+        }
+
+        //End MCMC
+      }
+
+
+      //Get Optimal Dose
+
+
+      StoppedGroups.zeros();
+      //Get MeanVec
+      for(k=0;k<(J+1);k++){
+        for(j=0;j<nDose;j++){
+          MeanVec(k,j) = sum(DoseProb.col(k*nDose+j))/DoseProb.n_rows;
+        }
+
+      }
+      //Now we have the mean vector
+
+      //  Rf_PrintValue(wrap(MeanVec));
+
+
+      //Do we have a stopped group?
+      for(k=0;k<(J+1);k++){
+        eta1=0;
+
+        for(j=0;j<1000;j++){
+          eta1 = eta1 + DoseProb(j,k*nDose)>Target[k];
+        }
+
+        eta1=eta1/1000;
+        if(eta1>Upper[k]){
+          StoppedGroups[k]=1;
+        }
+
+      }
+
+
+
+      //Determine Optimal Doses
+      for(k=0;k<(J+1);k++){
+
+        if(StoppedGroups[k]==1){
+          OptDose[k]=-1;
+        }else{
+          eta1=MinVec(abs(MeanVec.row(k).t()-Target[k]));
+          j=0;
+
+          GroupVec = abs(MeanVec.row(k).t()-Target[k]);
+
+          //  Rf_PrintValue(wrap(MeanVec));
+
+
+          while(GroupVec[j]!=eta1 ){
+            j++;
+            //Loop Proceeds until the minimum difference is reached
+          }
+
+          OptDose[k]=j;
+        }
+
+
+      }
+
+
+
+
+      //Is this dose bigger than the dose higher than what's been tried?
+      for(k=0;k<(J+1);k++){
+        if(StoppedGroups[k]==0){
+          for(j=0;j<(J+1);j++){
+            if(OptDose[j]>=nDose){
+              OptDose[j]=nDose-1;
+            }
+          }
+
+
+
+
+        }
+
+
+
+      }
+
+      //Is this dose bigger than the dose higher than what's been tried?
+      for(k=0;k<(J+1);k++){
+        if(DoseTried(k,OptDose[k])==0){
+          j=0;
+
+          while(DoseTried(k,j)==1){
+            j++;
+          }
+
+          OptDose[k]=j;
+
+        }
+
+      }
+
+
+
+
+
+
+
+      //Num Toxicities
+      for(k=0;k<Nmax;k++){
+        for(j=0;j<(J+1);j++){
+          if(Groups[k]==j){
+            NTox[j]=NTox[j]+I[k];
+          }
+        }
+      }
+
+
     }
+
+    OptDose=OptDose+1;
+
+
+    TrialTimes(rep)=trialtime;
+    for(j=0;j<(J+1);j++){
+      OptimalDoses(rep,j)=OptDose(j);
+      NTOX(rep,j)=NTox(j);
+    }
+
+
+
+
+    //Fill in Doses and Groups Treated
+    for(j=0;j<Nmax;j++){
+      DoseStore(rep,j)=Doses(j);
+      GroupStore(rep,j)=Groups(j);
+    }
+
+
+
+
+    //End Trial
   }
 
 
-}
-
-OptDose=OptDose+1;
-
-
-TrialTimes(rep)=trialtime;
-for(j=0;j<(J+1);j++){
-OptimalDoses(rep,j)=OptDose(j);
-  NTOX(rep,j)=NTox(j);
-}
 
 
 
-
-//Fill in Doses and Groups Treated
-for(j=0;j<Nmax;j++){
-  DoseStore(rep,j)=Doses(j);
-  GroupStore(rep,j)=Groups(j);
-}
-
-
-  //End Trial
-  }
-
-
-
-
-
-  List z1 = List::create(OptimalDoses,NTOX,TrialTimes,DoseStore,GroupStore);
+  List z1 = List::create(OptimalDoses,NTOX,TrialTimes,DoseStore,GroupStore,Y,Doses,Groups);
 
 
   return(z1);
@@ -1736,6 +1833,7 @@ for(j=0;j<Nmax;j++){
 
 
 }
+
 
 
 

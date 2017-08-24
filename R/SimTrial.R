@@ -18,10 +18,11 @@
 #' @param Param2 #Groups X #Doses Matrix containing the second parameter for each subgroup and dose for the Weibull, Gamma and Lognormal Distributions. This argument is not used for uniform and exponential distribution families.
 #' @return Returns a list with three simulation outputs: The vector of optimal doses chosen, the vector containing the doses administered in a trial and the group assignments of each patient in a simulated trial.
 #' @references
-#' [1] Chapple and Thall (2017), Subgroup-specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity.
+#' [1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.
+#' [2] Package Tutorial, https://adventuresinstatistics.wordpress.com/2017/08/24/the-subtite-package-tutorial/
 #' @examples
-#' set.seed(1)
-#' nSims=10
+#' ##Note: nSims  should be set larger than the example below.
+#' nSims=1
 #' ##Specify reference toxicity time and target
 #' T1=6
 #' Target=.3
@@ -30,7 +31,7 @@
 #' Upper=c(.9,.95)
 #' TGroup=0
 #' ##Maximum Sample Size
-#' Nmax=20
+#' Nmax=60
 #' ##Standardized Dose Values and starting dose index
 #' Dose=sort(rnorm(4))
 #' DoseStart=1
@@ -116,7 +117,7 @@ SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,TGroup,Upper,Accrue,gro
 
 
   if(Family=="Exponential"){
-    GroupProb = pexp(T1,Param1)
+    GroupProb = pexp(T1,1/Param1)
     Fam=0
   }
 
@@ -170,10 +171,10 @@ NTox=Results[[2]]
 for(b in 1:nSims){
 
   for(m in 1:nGroups){
-    if(DoseOpt[m]==0){
+    if(DoseOpt[b,m]==0){
       Dist[b,m]=POPT[m]
     }else{
-      Dist[b,m]=abs(GroupProb[m,DoseOpt[m]]-POPT[m])
+      Dist[b,m]=abs(GroupProb[m,DoseOpt[b,m]]-POPT[m])
     }
   }
 

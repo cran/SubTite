@@ -24,5 +24,6 @@ Dose=rnorm(5)
 GetPriorMeans(Clinician,Dose)
 }
 \references{
-[1] Chapple and Thall (2017), Subgroup-specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity.
+[1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.
+[2] Package Tutorial, https://adventuresinstatistics.wordpress.com/2017/08/24/the-subtite-package-tutorial/
 }

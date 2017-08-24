@@ -34,37 +34,47 @@ Returns a list with two objects, a vector of optimal doses and a vector of stopp
 Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.
 }
 \examples{
-set.seed(1)
-##Specify reference toxicity time and target
 T1=6
+##Reference Time for Toxicity
 Target=.3
-##Number of Groups
-##Specify upper bound for determining if the lowest dose is too toxic in a subgroup
 Upper=c(.9,.95,.95)
-##Randomly generate data for use.
-n=60
-Y=runif(n,0,100)
-I=rbinom(n,1,.5)
-Y[I==0]=T1
-Groups = sample(1:3,n,replace=TRUE)
+n=30
+Y=rep(NA,n)
+I=rep(NA,n)
+Groups = sample(1:3,n,replace=TRUE) - 1
+##Group assignment of patients (MUST BE CODED 0,1,2,...)
 Doses = sample(1:5,n,replace=TRUE)
-Dose = rnorm(5)
-##Doses Tried so far in trial
+##Randomly Generate Dose assignment
+x=c(1,2,3,5,7)
+Dose=(x-mean(x))/sd(x)
+##Vector of standardized doses
+##Next we generate the toxicity times based on a true toxicity probability matrix
+GroupProb = matrix(rep(NA,length(Dose)*3),nrow=3)
+GroupProb[1,]=c(.18,.25,.45,.66,.74)
+ ## These are the true toxicity probabilities for each dose and subgroup
+GroupProb[2,]=c(.10,.15,.30,.50,.60)
+GroupProb[3,]=c(.10,.15,.30,.50,.60) +.1
+for(b in 1:n){
+I[b]= rbinom(1,1   , GroupProb[(Groups[b]+1),Doses[b]])
+if(I[b]==0){ Y[b]=T1 }else{ Y[b]=runif(1,0,T1) }}
 DoseTried=matrix(c(1,1,0,0,0,1,1,1,1,1,1,1,0,0,0),ncol=5,byrow=TRUE)
-##What Groups are currently stopped
+ ##Doses Tried so far in trial
 ##Hypermeans for linear terms
-meanmu=2.21
-meanslope=-.57
-MeanInts = c(.46, .55)
-MeanSlopes = c(.04,.10)
+meanmu=-0.4467184
+meanslope= 0.8861634
+MeanInts = c(-0.5205379, -1.3752529)
+MeanSlopes = c(0.1888923, 0.1148791)
 ##Fill in Hyperparameter list for MCMC
 Hyper=as.list(c(0,0,0,0))
 Hyper[[1]]=meanmu
 Hyper[[2]]=meanslope
 Hyper[[3]]=MeanInts
 Hyper[[4]]=MeanSlopes
+Doses=Dose[Doses]
+ ##Standardized patient doses
 GetSubTite(Y,I,Doses,Groups,Hyper,T1,Target,Dose,Upper,DoseTried)
 }
 \references{
-[1] Chapple and Thall (2017), Subgroup-specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity.
+[1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.
+[2] Package Tutorial, https://adventuresinstatistics.wordpress.com/2017/08/24/the-subtite-package-tutorial/
 }
