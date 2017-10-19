@@ -1,14 +1,14 @@
 #' Simulates a Sub-TITE trial design
 #'
 #' Simulates replicates from a Sub-TITE trial with user specified true toxicity time distributions for different doses and subgroups and returns average summary statistics of the trial.
-#' @importFrom stats pexp pweibull pgamma plnorm rexp rbinom runif rweibull rgamma rlnorm
+#' @importFrom stats pexp pweibull pgamma plnorm rexp rbinom runif rweibull rgamma rlnorm rnorm var nls
+#' @importFrom Rcpp evalCpp
 #' @param nSims Number of Trials to Simulate.
 #' @param Nmax Maximum Number of Patients to enroll in the trial.
 #' @param T1 Reference time for toxicity.
 #' @param Target Target cumulative toxicity probability (or subgroup specific vector) at time T1.
 #' @param Dose Standardized vector of doses to try.
 #' @param DoseStart Dose (or vector of Doses) to enroll the first patient in each subgroup at.
-#' @param TGroup Amount of time to suspend accrual after three patients are enrolled in a subgroup.
 #' @param Accrue Expected montly patient accrual rate.
 #' @param groupprob Probability vector of subgroup assignment.
 #' @param Upper Cutoff values used to determine if accrual in a subgroup should be suspended.
@@ -16,10 +16,11 @@
 #' @param Family What distribution Family to simulate from. Options include: Exponential,Gamma, Lognormal, Uniform, Weibull.
 #' @param Param1 #Groups X #Doses Matrix containing the first parameter for each subgroup and dose. For the uniform distribution, this is the probability of toxicity in a given group.
 #' @param Param2 #Groups X #Doses Matrix containing the second parameter for each subgroup and dose for the Weibull, Gamma and Lognormal Distributions. This argument is not used for uniform and exponential distribution families.
+#' @param VarInt Prior Variance of Intercept Parameters
+#' @param VarSlope Prior Variance of Slope Parameters
 #' @return Returns a list with three simulation outputs: The vector of optimal doses chosen, the vector containing the doses administered in a trial and the group assignments of each patient in a simulated trial.
 #' @references
-#' [1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.
-#' [2] Package Tutorial, https://adventuresinstatistics.wordpress.com/2017/08/24/the-subtite-package-tutorial/
+#' [1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination
 #' @examples
 #' ##Note: nSims  should be set larger than the example below.
 #' nSims=1
@@ -28,10 +29,9 @@
 #' Target=.3
 #' ##Number of Groups
 #' ##Specify upper bound for determining if the lowest dose is too toxic in a subgroup
-#' Upper=c(.9,.95)
-#' TGroup=0
+#' Upper=c(.95,.95)
 #' ##Maximum Sample Size
-#' Nmax=60
+#' Nmax=40
 #' ##Standardized Dose Values and starting dose index
 #' Dose=sort(rnorm(4))
 #' DoseStart=1
@@ -52,10 +52,12 @@
 #' Family="Uniform"
 #' Param1 = matrix(c(.2,.3,.4,.5,.6,.1,.2,.3,.4,.5),byrow=TRUE,nrow=2)
 #' Param2=Param1
-#' SimTrial(nSims,Nmax,T1,Target,Dose,DoseStart,TGroup,
-#' Upper,Accrue,groupprob,Hyper,Family,Param1,Param2)
+#' VarInt=5
+#' VarSlope=1
+#' SimTrial(nSims,Nmax,T1,Target,Dose,DoseStart,
+#' Upper,Accrue,groupprob,Hyper,Family,Param1,Param2,VarInt,VarSlope)
 #' @export
-SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,TGroup,Upper,Accrue,groupprob,Hyper,Family,Param1,Param2){
+SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,Upper,Accrue,groupprob,Hyper,Family,Param1,Param2,VarInt,VarSlope){
 
 
 
@@ -160,8 +162,8 @@ SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,TGroup,Upper,Accrue,gro
 
 
   ##Feed Everything into the trial
-Results= SimTrial1( nSims, Nmax,  T1, Target,  Dose,  DoseStart, TGroup,Upper, Accrue, groupprob,
-                    Fam, Param1,Param2,meanmu, meanslope,MeanInts, MeanSlopes )
+Results= SimTrial1( nSims, Nmax,  T1, Target,  Dose,  DoseStart,Upper, Accrue, groupprob,
+                    Fam, Param1,Param2,meanmu, meanslope,MeanInts, MeanSlopes,VarInt,VarSlope )
 
 DoseOpt = Results[[1]]
 NTox=Results[[2]]
@@ -202,6 +204,13 @@ for(b in 1:nSims){
     OptProb[m]=mean(DoseOpt[,m]==WHICHOPT[m])
   }
 
+  for(m in 1:nGroups){
+    if(GroupProb[m,1]>Target[m]){
+      OptProb[m]=NA
+      Dist[m]=NA
+    }
+  }
+
 
   cat("Subgroup Specific Selection Probability of the Optimal Dose", OptProb )
 
@@ -237,6 +246,18 @@ for(b in 1:nSims){
   print(colMeans(NTox))
 
 TrialTimes=Results[[3]]
+
+
+
+cat("
+      Average number Treated for each Subgroup
+
+    ")
+
+print(table(Results[[5]])/nSims)
+
+
+
 
 
   cat("

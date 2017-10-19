@@ -2,9 +2,11 @@
 % Please edit documentation in R/GetSubTite.R
 \name{GetSubTite}
 \alias{GetSubTite}
-\title{Gives the subgroup specific optimal dose vector.}
+\title{Gives the subgroup specific optimal dose vector.
+ Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.}
 \usage{
-GetSubTite(Y, I, Doses, Groups, Hyper, T1, Target, Dose, Upper, DoseTried)
+GetSubTite(Y, I, Doses, Groups, DoseTried, T1, Target, Upper, Dose, meanmu,
+  meanslope, MeanInts, MeanSlopes, varint, varbeta)
 }
 \arguments{
 \item{Y}{Vector containing observed event or censoring times.}
@@ -15,33 +17,41 @@ GetSubTite(Y, I, Doses, Groups, Hyper, T1, Target, Dose, Upper, DoseTried)
 
 \item{Groups}{Vector containing group assignment of patients, 1 is baseline group.}
 
-\item{Hyper}{List of size 4 containing, in order, the prior mean of the baseline slope, the baseline intercept, and the prior mean vectors for group specific intercepts and slopes.}
+\item{DoseTried}{#Groups X #Doses Matrix that contains 1s and 0s corresponding to whether a given dose in a subgroup had been tried.}
 
 \item{T1}{Reference time for toxicity.}
 
 \item{Target}{Target cumulative toxicity probability vector at time T1.}
 
-\item{Dose}{Vector containing the standardized doses considered.}
-
 \item{Upper}{Cutoff values used to determine if accrual in a subgroup should be suspended.}
 
-\item{DoseTried}{#Groups X #Doses Matrix that contains 1s and 0s corresponding to whether a given dose in a subgroup had been tried.}
-}
-\value{
-Returns a list with two objects, a vector of optimal doses and a vector of stopped groups
+\item{Dose}{Vector containing the standardized doses considered.}
+
+\item{meanmu}{Prior mean for baseline intercept.}
+
+\item{meanslope}{Prior mean for baseline slope.}
+
+\item{MeanInts}{Vector of prior means for the group specific intercept parameters.}
+
+\item{MeanSlopes}{Vector of prior means for the group specific slope parameters.}
+
+\item{varint}{Prior variance for the intercept parameters.}
+
+\item{varbeta}{Prior variance for the slope parameters.#' @return Returns a list with two objects, a vector of optimal doses and a vector of stopped groups}
 }
 \description{
-Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.
+Gives the subgroup specific optimal dose vector.
+ Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.
 }
 \examples{
 T1=6
 ##Reference Time for Toxicity
 Target=.3
-Upper=c(.9,.95,.95)
+Upper=c(.95,.95)
 n=30
 Y=rep(NA,n)
 I=rep(NA,n)
-Groups = sample(1:3,n,replace=TRUE) - 1
+Groups = sample(1:2,n,replace=TRUE) - 1
 ##Group assignment of patients (MUST BE CODED 0,1,2,...)
 Doses = sample(1:5,n,replace=TRUE)
 ##Randomly Generate Dose assignment
@@ -52,27 +62,23 @@ Dose=(x-mean(x))/sd(x)
 GroupProb = matrix(rep(NA,length(Dose)*3),nrow=3)
 GroupProb[1,]=c(.18,.25,.45,.66,.74)
  ## These are the true toxicity probabilities for each dose and subgroup
-GroupProb[2,]=c(.10,.15,.30,.50,.60)
-GroupProb[3,]=c(.10,.15,.30,.50,.60) +.1
+GroupProb[2,]=c(.10,.15,.30,.50,.60) +.1
 for(b in 1:n){
 I[b]= rbinom(1,1   , GroupProb[(Groups[b]+1),Doses[b]])
 if(I[b]==0){ Y[b]=T1 }else{ Y[b]=runif(1,0,T1) }}
-DoseTried=matrix(c(1,1,0,0,0,1,1,1,1,1,1,1,0,0,0),ncol=5,byrow=TRUE)
+DoseTried=matrix(c(1,1,0,0,0,1,1,1,1,1),ncol=5,byrow=TRUE)
  ##Doses Tried so far in trial
 ##Hypermeans for linear terms
 meanmu=-0.4467184
 meanslope= 0.8861634
-MeanInts = c(-0.5205379, -1.3752529)
-MeanSlopes = c(0.1888923, 0.1148791)
-##Fill in Hyperparameter list for MCMC
-Hyper=as.list(c(0,0,0,0))
-Hyper[[1]]=meanmu
-Hyper[[2]]=meanslope
-Hyper[[3]]=MeanInts
-Hyper[[4]]=MeanSlopes
+MeanInts = -0.5205379
+MeanSlopes = 0.1888923
 Doses=Dose[Doses]
- ##Standardized patient doses
-GetSubTite(Y,I,Doses,Groups,Hyper,T1,Target,Dose,Upper,DoseTried)
+varint=5
+varbeta=1
+GetSubTite(Y, I,Doses, Groups, DoseTried, T1,
+ Target,  Upper, Dose,  meanmu, meanslope,
+  MeanInts,  MeanSlopes ,varint,varbeta)
 }
 \references{
 [1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.

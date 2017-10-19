@@ -12,7 +12,7 @@ GetPriorMeans(Clinician, Dose)
 \item{Dose}{Vector containing standardized doses.}
 }
 \value{
-Returns a list containing in order: the prior mean of the common baseline intercept, the prior mean of the common slope, the vector of subgroup specific intercepts and the vector of subgroup specific slopes.
+Returns the nonlinear regression model whos parameter estimates will be used as prior means for the SubTITE Design.
 }
 \description{
 Uses the clinician elicited prior reference probabilities for each subgroup and dose to obtain prior means for the Bayesian logistic regression model used in the SubTite trial design.
@@ -20,10 +20,9 @@ Uses the clinician elicited prior reference probabilities for each subgroup and 
 \examples{
 ##Specify elicited reference toxicity probabilities
 Clinician = matrix(c(.2,.3,.4,.5,.6,.1,.2,.3,.4,.5,.05,.1,.15,.2,.3),byrow=TRUE,nrow=3)
-Dose=rnorm(5)
+Dose=sort(rnorm(5))
 GetPriorMeans(Clinician,Dose)
 }
 \references{
-[1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.
-[2] Package Tutorial, https://adventuresinstatistics.wordpress.com/2017/08/24/the-subtite-package-tutorial/
+[1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination
 }

@@ -3,14 +3,13 @@
 #'  Uses the clinician elicited prior reference probabilities for each subgroup and dose to obtain prior means for the Bayesian logistic regression model used in the SubTite trial design.
 #' @param Clinician #Groups X #Doses matrix containing the elicited prior toxicity probabilities at the reference time for each dose and subgroup.
 #' @param Dose Vector containing standardized doses.
-#' @return Returns a list containing in order: the prior mean of the common baseline intercept, the prior mean of the common slope, the vector of subgroup specific intercepts and the vector of subgroup specific slopes.
+#' @return Returns the nonlinear regression model whos parameter estimates will be used as prior means for the SubTITE Design.
 #' @references
-#' [1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.
-#' [2] Package Tutorial, https://adventuresinstatistics.wordpress.com/2017/08/24/the-subtite-package-tutorial/
+#' [1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination
 #' @examples
 #' ##Specify elicited reference toxicity probabilities
 #' Clinician = matrix(c(.2,.3,.4,.5,.6,.1,.2,.3,.4,.5,.05,.1,.15,.2,.3),byrow=TRUE,nrow=3)
-#' Dose=rnorm(5)
+#' Dose=sort(rnorm(5))
 #' GetPriorMeans(Clinician,Dose)
 #' @export
 GetPriorMeans = function(Clinician,Dose){
@@ -49,39 +48,163 @@ GetPriorMeans = function(Clinician,Dose){
   }
 
 
-  ##Fill rest of Cov with Doses and we will zero out the group scale ones
-  for(m in (G+1):ncol(COV)){
-    COV[,m]=0
+
+
+
+
+
+
+  if(nGroups==2){
+
+    Group=c(rep(0,length(Dose)),rep(1,length(Dose)))
+    Group1=Group==1
+
+
+
+
+
+
+
+    m1 <- nls(Y ~ alpha + alpha1*Group1+exp(beta+beta1*Group1)*DOSEVEC,
+              start = list(alpha=0,alpha1=0,beta=0,beta1=0))
+
+
+    print(m1)
+
+
+
   }
 
-  for(m in (G+2):ncol(COV)){
-    k=m-G
-    COV[((k-1)*D+1):(k*D),m] = Dose
 
-    COV[((k-1)*D+1):(k*D),k] = 1
+
+
+
+
+  if(nGroups==3){
+
+    Group=c(rep(0,length(Dose)),rep(1,length(Dose)),rep(2,length(Dose)))
+    Group1=Group==1
+    Group2=Group==2
+
+
+
+
+
+
+
+    m1 <- nls(Y ~ alpha + alpha1*Group1+alpha2*Group2+exp(beta+beta1*Group1+beta2*Group2)*DOSEVEC,
+              start = list(alpha=0,alpha1=0, alpha2=0,beta=0,beta1=0,beta2=0))
+
+
+    print(m1)
+
 
 
   }
 
-  COV[,G+1]=DOSEVEC
 
 
 
-  beta=solve(t(COV)%*%COV)%*%t(COV)%*%Y
+
+  if(nGroups==4){
+
+    Group=c(rep(0,length(Dose)),rep(1,length(Dose)),rep(2,length(Dose)),rep(3,length(Dose)))
+    Group1=Group==1
+    Group2=Group==2
+    Group3=Group==3
 
 
-  MeanInts = beta[2:(nGroups)]
-  meanslope=beta[nGroups+1]
-  MeanSlopes=beta[(nGroups+2):length(beta)]
 
-  X1=as.list(c(0,0,0,0))
 
-  X1[[1]]=beta[1]
-  X1[[2]]=meanslope
-  X1[[3]]=MeanInts
-  X1[[4]]=MeanSlopes
 
-  return(X1)
+
+
+    m1 <- nls(Y ~ alpha + alpha1*Group1+alpha2*Group2+alpha3*Group3+exp(beta+beta1*Group1+beta2*Group2+beta3*Group3)*DOSEVEC,
+              start = list(alpha=0,alpha1=0, alpha2=0,alpha3=0,beta=0,beta1=0,beta2=0,beta3=0))
+
+
+    print(m1)
+
+
+
+  }
+
+
+
+
+
+
+
+
+
+
+
+  if(nGroups==5){
+
+    Group=c(rep(0,length(Dose)),rep(1,length(Dose)),rep(2,length(Dose)),rep(3,length(Dose)),rep(4,length(Dose)))
+    Group1=Group==1
+    Group2=Group==2
+    Group3=Group==3
+    Group4=Group==4
+
+
+
+
+
+
+
+    m1 <- nls(Y ~ alpha + alpha1*Group1+alpha2*Group2+alpha3*Group3+alpha4*Group4+exp(beta+beta1*Group1+beta2*Group2+beta3*Group3+beta4*Group4)*DOSEVEC,
+              start = list(alpha=0,alpha1=0, alpha2=0,alpha3=0,alpha4=0,beta=0,beta1=0,beta2=0,beta3=0,beta4=0))
+
+
+    print(m1)
+
+
+
+  }
+
+
+
+
+
+
+
+
+  if(nGroups==6){
+
+    Group=c(rep(0,length(Dose)),rep(1,length(Dose)),rep(2,length(Dose)),rep(3,length(Dose)),rep(4,length(Dose)),rep(5,length(Dose)))
+    Group1=Group==1
+    Group2=Group==2
+    Group3=Group==3
+    Group4=Group==4
+    Group5=Group==5
+
+
+
+
+
+
+
+    m1 <- nls(Y ~ alpha + alpha1*Group1+alpha2*Group2+alpha3*Group3+alpha4*Group4+alpha5*Group5+exp(beta+beta1*Group1+beta2*Group2+beta3*Group3+beta4*Group4+beta5*Group5)*DOSEVEC,
+              start = list(alpha=0,alpha1=0, alpha2=0,alpha3=0,alpha4=0,alpha5=0,beta=0,beta1=0,beta2=0,beta3=0,beta4=0,beta5=0))
+
+
+    print(m1)
+
+
+
+  }
+
+
+  if(nGroups>6){
+    cat("Code only supports up to 6 subgroups, contact maintainer if you desire more")
+
+  }
+
+
+
+
+
 
 
 

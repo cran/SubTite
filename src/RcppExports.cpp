@@ -6,29 +6,9 @@
 
 using namespace Rcpp;
 
-// GroupMCMCLN
-List GroupMCMCLN(arma::vec Y, arma::vec I, arma::vec Doses, arma::vec Groups, double meanmu, double meanslope, arma::vec MeanInts, arma::vec MeanSlopes, int B, double T1);
-RcppExport SEXP SubTite_GroupMCMCLN(SEXP YSEXP, SEXP ISEXP, SEXP DosesSEXP, SEXP GroupsSEXP, SEXP meanmuSEXP, SEXP meanslopeSEXP, SEXP MeanIntsSEXP, SEXP MeanSlopesSEXP, SEXP BSEXP, SEXP T1SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type I(ISEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type Doses(DosesSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type Groups(GroupsSEXP);
-    Rcpp::traits::input_parameter< double >::type meanmu(meanmuSEXP);
-    Rcpp::traits::input_parameter< double >::type meanslope(meanslopeSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type MeanInts(MeanIntsSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type MeanSlopes(MeanSlopesSEXP);
-    Rcpp::traits::input_parameter< int >::type B(BSEXP);
-    Rcpp::traits::input_parameter< double >::type T1(T1SEXP);
-    rcpp_result_gen = Rcpp::wrap(GroupMCMCLN(Y, I, Doses, Groups, meanmu, meanslope, MeanInts, MeanSlopes, B, T1));
-    return rcpp_result_gen;
-END_RCPP
-}
 // SimTrial1
-List SimTrial1(int nSims, int Nmax, double T1, arma::vec Target, arma::vec Dose, arma::vec DoseStart, double TGroup, arma::vec Upper, double Accrue, arma::vec groupprob, int Family, arma::mat Param1, arma::mat Param2, double meanmu, double meanslope, arma::vec MeanInts, arma::vec MeanSlopes);
-RcppExport SEXP SubTite_SimTrial1(SEXP nSimsSEXP, SEXP NmaxSEXP, SEXP T1SEXP, SEXP TargetSEXP, SEXP DoseSEXP, SEXP DoseStartSEXP, SEXP TGroupSEXP, SEXP UpperSEXP, SEXP AccrueSEXP, SEXP groupprobSEXP, SEXP FamilySEXP, SEXP Param1SEXP, SEXP Param2SEXP, SEXP meanmuSEXP, SEXP meanslopeSEXP, SEXP MeanIntsSEXP, SEXP MeanSlopesSEXP) {
+List SimTrial1(int nSims, int Nmax, double T1, arma::vec Target, arma::vec Dose, arma::vec DoseStart, arma::vec Upper, double Accrue, arma::vec groupprob, int Family, arma::mat Param1, arma::mat Param2, double meanmu, double meanslope, arma::vec MeanInts, arma::vec MeanSlopes, double varint, double varbeta);
+RcppExport SEXP SubTite_SimTrial1(SEXP nSimsSEXP, SEXP NmaxSEXP, SEXP T1SEXP, SEXP TargetSEXP, SEXP DoseSEXP, SEXP DoseStartSEXP, SEXP UpperSEXP, SEXP AccrueSEXP, SEXP groupprobSEXP, SEXP FamilySEXP, SEXP Param1SEXP, SEXP Param2SEXP, SEXP meanmuSEXP, SEXP meanslopeSEXP, SEXP MeanIntsSEXP, SEXP MeanSlopesSEXP, SEXP varintSEXP, SEXP varbetaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -38,7 +18,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type Target(TargetSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type Dose(DoseSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type DoseStart(DoseStartSEXP);
-    Rcpp::traits::input_parameter< double >::type TGroup(TGroupSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type Upper(UpperSEXP);
     Rcpp::traits::input_parameter< double >::type Accrue(AccrueSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type groupprob(groupprobSEXP);
@@ -49,14 +28,41 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type meanslope(meanslopeSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type MeanInts(MeanIntsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type MeanSlopes(MeanSlopesSEXP);
-    rcpp_result_gen = Rcpp::wrap(SimTrial1(nSims, Nmax, T1, Target, Dose, DoseStart, TGroup, Upper, Accrue, groupprob, Family, Param1, Param2, meanmu, meanslope, MeanInts, MeanSlopes));
+    Rcpp::traits::input_parameter< double >::type varint(varintSEXP);
+    Rcpp::traits::input_parameter< double >::type varbeta(varbetaSEXP);
+    rcpp_result_gen = Rcpp::wrap(SimTrial1(nSims, Nmax, T1, Target, Dose, DoseStart, Upper, Accrue, groupprob, Family, Param1, Param2, meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GetDose1
+arma::vec GetDose1(arma::vec Y, arma::vec I, arma::vec Doses, arma::vec Groups, arma::mat DoseTried, double T1, arma::vec Target, arma::vec Upper, arma::vec Dose, double meanmu, double meanslope, arma::vec MeanInts, arma::vec MeanSlopes, double varint, double varbeta);
+RcppExport SEXP SubTite_GetDose1(SEXP YSEXP, SEXP ISEXP, SEXP DosesSEXP, SEXP GroupsSEXP, SEXP DoseTriedSEXP, SEXP T1SEXP, SEXP TargetSEXP, SEXP UpperSEXP, SEXP DoseSEXP, SEXP meanmuSEXP, SEXP meanslopeSEXP, SEXP MeanIntsSEXP, SEXP MeanSlopesSEXP, SEXP varintSEXP, SEXP varbetaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type I(ISEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Doses(DosesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Groups(GroupsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type DoseTried(DoseTriedSEXP);
+    Rcpp::traits::input_parameter< double >::type T1(T1SEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Target(TargetSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Upper(UpperSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Dose(DoseSEXP);
+    Rcpp::traits::input_parameter< double >::type meanmu(meanmuSEXP);
+    Rcpp::traits::input_parameter< double >::type meanslope(meanslopeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type MeanInts(MeanIntsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type MeanSlopes(MeanSlopesSEXP);
+    Rcpp::traits::input_parameter< double >::type varint(varintSEXP);
+    Rcpp::traits::input_parameter< double >::type varbeta(varbetaSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetDose1(Y, I, Doses, Groups, DoseTried, T1, Target, Upper, Dose, meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"SubTite_GroupMCMCLN", (DL_FUNC) &SubTite_GroupMCMCLN, 10},
-    {"SubTite_SimTrial1", (DL_FUNC) &SubTite_SimTrial1, 17},
+    {"SubTite_SimTrial1", (DL_FUNC) &SubTite_SimTrial1, 18},
+    {"SubTite_GetDose1", (DL_FUNC) &SubTite_GetDose1, 15},
     {NULL, NULL, 0}
 };
 

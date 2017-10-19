@@ -4,8 +4,8 @@
 \alias{SimTrial}
 \title{Simulates a Sub-TITE trial design}
 \usage{
-SimTrial(nSims, Nmax, T1, Target, Dose, DoseStart, TGroup, Upper, Accrue,
-  groupprob, Hyper, Family, Param1, Param2)
+SimTrial(nSims, Nmax, T1, Target, Dose, DoseStart, Upper, Accrue, groupprob,
+  Hyper, Family, Param1, Param2, VarInt, VarSlope)
 }
 \arguments{
 \item{nSims}{Number of Trials to Simulate.}
@@ -20,8 +20,6 @@ SimTrial(nSims, Nmax, T1, Target, Dose, DoseStart, TGroup, Upper, Accrue,
 
 \item{DoseStart}{Dose (or vector of Doses) to enroll the first patient in each subgroup at.}
 
-\item{TGroup}{Amount of time to suspend accrual after three patients are enrolled in a subgroup.}
-
 \item{Upper}{Cutoff values used to determine if accrual in a subgroup should be suspended.}
 
 \item{Accrue}{Expected montly patient accrual rate.}
@@ -35,6 +33,10 @@ SimTrial(nSims, Nmax, T1, Target, Dose, DoseStart, TGroup, Upper, Accrue,
 \item{Param1}{#Groups X #Doses Matrix containing the first parameter for each subgroup and dose. For the uniform distribution, this is the probability of toxicity in a given group.}
 
 \item{Param2}{#Groups X #Doses Matrix containing the second parameter for each subgroup and dose for the Weibull, Gamma and Lognormal Distributions. This argument is not used for uniform and exponential distribution families.}
+
+\item{VarInt}{Prior Variance of Intercept Parameters}
+
+\item{VarSlope}{Prior Variance of Slope Parameters}
 }
 \value{
 Returns a list with three simulation outputs: The vector of optimal doses chosen, the vector containing the doses administered in a trial and the group assignments of each patient in a simulated trial.
@@ -50,10 +52,9 @@ T1=6
 Target=.3
 ##Number of Groups
 ##Specify upper bound for determining if the lowest dose is too toxic in a subgroup
-Upper=c(.9,.95)
-TGroup=0
+Upper=c(.95,.95)
 ##Maximum Sample Size
-Nmax=60
+Nmax=40
 ##Standardized Dose Values and starting dose index
 Dose=sort(rnorm(4))
 DoseStart=1
@@ -74,10 +75,11 @@ Hyper[[4]]=MeanSlopes
 Family="Uniform"
 Param1 = matrix(c(.2,.3,.4,.5,.6,.1,.2,.3,.4,.5),byrow=TRUE,nrow=2)
 Param2=Param1
-SimTrial(nSims,Nmax,T1,Target,Dose,DoseStart,TGroup,
-Upper,Accrue,groupprob,Hyper,Family,Param1,Param2)
+VarInt=5
+VarSlope=1
+SimTrial(nSims,Nmax,T1,Target,Dose,DoseStart,
+Upper,Accrue,groupprob,Hyper,Family,Param1,Param2,VarInt,VarSlope)
 }
 \references{
-[1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.
-[2] Package Tutorial, https://adventuresinstatistics.wordpress.com/2017/08/24/the-subtite-package-tutorial/
+[1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination
 }
