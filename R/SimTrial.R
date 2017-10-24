@@ -18,7 +18,7 @@
 #' @param Param2 #Groups X #Doses Matrix containing the second parameter for each subgroup and dose for the Weibull, Gamma and Lognormal Distributions. This argument is not used for uniform and exponential distribution families.
 #' @param VarInt Prior Variance of Intercept Parameters
 #' @param VarSlope Prior Variance of Slope Parameters
-#' @return Returns a list with three simulation outputs: The vector of optimal doses chosen, the vector containing the doses administered in a trial and the group assignments of each patient in a simulated trial.
+#' @return Returns a list with five simulation outputs: The vector of optimal doses chosen, the number of toxicities per group, the trial times of each simulated trial, the vector containing the doses administered in a trial and the group assignments of each patient in a simulated trial.
 #' @references
 #' [1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination
 #' @examples

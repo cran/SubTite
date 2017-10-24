@@ -25,7 +25,7 @@ using namespace Rcpp;
 
 int Sample2(arma::vec groupprob){
   arma::vec cumprob=groupprob;
-  int m;
+  int m=0;
 
   for(m=1;m<groupprob.n_rows;m++){
     cumprob[m]=cumprob[m]+cumprob[m-1];
@@ -33,7 +33,7 @@ int Sample2(arma::vec groupprob){
   //Now we have the vector of cumulative probabilities, let's draw a random unif
   double U=as_scalar(arma::randu(1));
 
-  int Which;
+  int Which=0;
 
 
   if(U<cumprob[0]){
@@ -101,7 +101,7 @@ int GetFullyFollowed(arma::vec Y, //Survival Times
 
 double MaxVec(arma::vec Y){
   int J1=Y.n_rows;
-  int j;
+  int j=0;
   double max=Y[0];
   for(j=1;j<J1;j++){
     if(Y[j]>max){
@@ -269,7 +269,7 @@ arma::vec ReturnStoppedGroups(arma::vec Y, arma::vec I,arma::vec Groups, arma::v
 
 double MinVec(arma::vec Y){
   int J1=Y.n_rows;
-  int j;
+  int j=0;
   double max=Y[0];
   for(j=1;j<J1;j++){
     if(Y[j]<max){
@@ -336,7 +336,7 @@ double Like1(arma::vec Y,  //Vector of Toxicity Times
   eta.zeros();
 
   //Needed for For loops
-  int m;
+  int m=0;
   int k=1;
 
 
@@ -425,7 +425,7 @@ double LikeMULTI(arma::vec Y,  //Vector of Toxicity Times
   eta.zeros();
 
   //Needed for For loops
-  int m;
+  int m=0;
   int k=1;
 
   for(m=1;m<GroupMem.n_rows;m++){
@@ -513,7 +513,7 @@ double Like3(arma::vec Y,  //Vector of Toxicity Times
   eta.zeros();
 
   //Needed for For loops
-  int m;
+  int m=0;
   int k=1;
 
 
@@ -617,7 +617,7 @@ double Like2(arma::vec Y,  //Vector of Toxicity Times
   eta.zeros();
 
   //Needed for For loops
-  int m;
+  int m=0;
   int k=1;
 
 
@@ -703,7 +703,7 @@ int Sample1(int J1){
 
 
 
-  int m;
+  int m=0;
 
   for(m=0;m<J;m++){
     groupprob[m]=1/J;
@@ -724,7 +724,7 @@ int Sample1(int J1){
   //Now we have the vector of cumulative probabilities, let's draw a random unif
   double U=as_scalar(arma::randu(1));
 
-  int Which;
+  int Which=0;
 
 
   if(U<cumprob[0]){
@@ -882,7 +882,7 @@ int GetNewGroup(arma::vec INVEC){
   //Now we have the vector of cumulative probabilities, let's draw a random unif
   double U=as_scalar(arma::randu(1));
 
-  int Which;
+  int Which=0;
 
 
   if(U<cumprob[0]){
@@ -1019,9 +1019,9 @@ List SimTrial1(int nSims, //Number of Simulations to Run
   double slope=meanslope;
   double sig=T1;
 
-  double NewMean;
-  double NewSlope;
-  int Which1;
+  double NewMean=0;
+  double NewSlope=0;
+  int Which1=0;
 
 
 
@@ -3105,7 +3105,7 @@ b=MeanSlopes;
   arma::vec INVEC(J);
   INVEC.zeros();
 
-  int eta2=0;
+   eta2=0;
 
   arma::mat MeanVec((J+1),nDose);
   arma::vec NTox(J+1);
@@ -3114,7 +3114,7 @@ b=MeanSlopes;
   arma::vec SuspendGroups(J+1);
   arma::vec GLast(J+1);
   arma::vec nTreated(J+1);
-  double stopped=0;
+   stopped=0;
   arma::vec TrialTimes(nSims);
   arma::mat OptimalDoses(nSims,(J+1));
   arma::mat NTOX = OptimalDoses;
@@ -6579,7 +6579,7 @@ b=MeanSlopes;
 
 
 
-  List z1 = List::create(OptimalDoses,NTOX,TrialTimes,DoseStore,GroupStore,Y2,Doses2,mustore,slopestore,astore,bstore,Y,I,Doses,Groups);
+  List z1 = List::create(OptimalDoses,NTOX,TrialTimes,DoseStore,GroupStore);
 
 
 
@@ -6666,9 +6666,9 @@ arma::vec GetDose1( arma::vec Y, //Vector of Times
   double slope=meanslope;
   double sig=T1;
 
-  double NewMean;
-  double NewSlope;
-  int Which1;
+  double NewMean=0;
+  double NewSlope=0;
+  int Which1=0;
 
 
 
@@ -7584,7 +7584,6 @@ arma::vec GetDose1( arma::vec Y, //Vector of Times
 
 
 
-    int eta2=0;
 
     arma::mat MeanVec((J+1),nDose);
     arma::vec NTox(J+1);
@@ -7593,7 +7592,7 @@ arma::vec GetDose1( arma::vec Y, //Vector of Times
     arma::vec SuspendGroups(J+1);
     arma::vec GLast(J+1);
     arma::vec nTreated(J+1);
-    double stopped=0;
+     stopped=0;
     arma::vec GroupVec(nDose);
     arma::vec TriedGroups(J+1);
 
