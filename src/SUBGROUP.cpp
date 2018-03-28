@@ -41,7 +41,7 @@ int Sample2(arma::vec groupprob){
   }else{
 
     for(m=0;m<(groupprob.n_rows-2);m++){
-      if(U>cumprob[m] & U<cumprob[m+1]){
+      if( (U>cumprob[m]) && (U<cumprob[m+1]) ){
         Which=m+1;
       }
 
@@ -732,7 +732,7 @@ int Sample1(int J1){
   }else{
 
     for(m=0;m<(groupprob.n_rows-2);m++){
-      if(U>cumprob[m] & U<cumprob[m+1]){
+      if( (U>cumprob[m]) && (U<cumprob[m+1]) ){
         Which=m+1;
       }
 
@@ -890,7 +890,7 @@ int GetNewGroup(arma::vec INVEC){
   }else{
 
     for(m=0;m<(cumprob.n_rows-2);m++){
-      if(U>cumprob[m] & U<cumprob[m+1]){
+      if( (U>cumprob[m]) && (U<cumprob[m+1]) ){
         Which=m+1;
       }
 
@@ -6452,7 +6452,6 @@ b=MeanSlopes;
 
       }
 
-      Rf_PrintValue(wrap(MeanVec));
 
 
 

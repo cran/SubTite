@@ -39,7 +39,7 @@ SimTrial(nSims, Nmax, T1, Target, Dose, DoseStart, Upper, Accrue, groupprob,
 \item{VarSlope}{Prior Variance of Slope Parameters}
 }
 \value{
-Returns a list with three simulation outputs: The vector of optimal doses chosen, the vector containing the doses administered in a trial and the group assignments of each patient in a simulated trial.
+Returns a list with five simulation outputs: The vector of optimal doses chosen, the number of toxicities per group, the trial times of each simulated trial, the vector containing the doses administered in a trial and the group assignments of each patient in a simulated trial.
 }
 \description{
 Simulates replicates from a Sub-TITE trial with user specified true toxicity time distributions for different doses and subgroups and returns average summary statistics of the trial.
