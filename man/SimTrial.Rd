@@ -4,8 +4,9 @@
 \alias{SimTrial}
 \title{Simulates a Sub-TITE trial design}
 \usage{
-SimTrial(nSims, Nmax, T1, Target, Dose, DoseStart, Upper, Accrue, groupprob,
-  Hyper, Family, Param1, Param2, VarInt, VarSlope)
+SimTrial(nSims, Nmax, T1, Target, Dose, DoseStart, Upper, Accrue,
+  groupprob, meanmu, meanslope, MeanInts, MeanSlopes, VarInt, VarSlope,
+  phetero, Family, SimTruth, NSep, NBorrow, cohort, FULL)
 }
 \arguments{
 \item{nSims}{Number of Trials to Simulate.}
@@ -26,20 +27,34 @@ SimTrial(nSims, Nmax, T1, Target, Dose, DoseStart, Upper, Accrue, groupprob,
 
 \item{groupprob}{Probability vector of subgroup assignment.}
 
-\item{Hyper}{List of size 4 containing the prior mean of the baseline slope, the baseline intercept, and the prior mean vectors for group specific intercepts and slopes.}
+\item{meanmu}{Prior mean of the baseline intercept parameter.}
+
+\item{meanslope}{Prior mean of the baseline slope parameter.}
+
+\item{MeanInts}{G-1 length vector of subgroup specific prior intercept means.}
+
+\item{MeanSlopes}{G-1 length vector of subgroup specific prior slope means.}
+
+\item{VarInt}{Prior Variance of Intercept Parameters.}
+
+\item{VarSlope}{Prior Variance of Slope Parameters.}
+
+\item{phetero}{Prior prob of clustering}
 
 \item{Family}{What distribution Family to simulate from. Options include: Exponential,Gamma, Lognormal, Uniform, Weibull.}
 
-\item{Param1}{#Groups X #Doses Matrix containing the first parameter for each subgroup and dose. For the uniform distribution, this is the probability of toxicity in a given group.}
+\item{SimTruth}{List of 2 #Groups by #Doses matrices containing the true parameter values needed for simulating from different true time to toxicity distributions.}
 
-\item{Param2}{#Groups X #Doses Matrix containing the second parameter for each subgroup and dose for the Weibull, Gamma and Lognormal Distributions. This argument is not used for uniform and exponential distribution families.}
+\item{NSep}{Number of patients to assign based on no borrowing.}
 
-\item{VarInt}{Prior Variance of Intercept Parameters}
+\item{NBorrow}{Number of patients to assign based on no clustering}
 
-\item{VarSlope}{Prior Variance of Slope Parameters}
+\item{cohort}{Number of patients to enroll before escalating.}
+
+\item{FULL}{Do we have to fully evaluate a cohort before escalating?}
 }
 \value{
-Returns a list with five simulation outputs: The vector of optimal doses chosen, the number of toxicities per group, the trial times of each simulated trial, the vector containing the doses administered in a trial and the group assignments of each patient in a simulated trial.
+A list with first entry corresponding to summaries of the operating characteristics of the design including
 }
 \description{
 Simulates replicates from a Sub-TITE trial with user specified true toxicity time distributions for different doses and subgroups and returns average summary statistics of the trial.
@@ -47,39 +62,52 @@ Simulates replicates from a Sub-TITE trial with user specified true toxicity tim
 \examples{
 ##Note: nSims  should be set larger than the example below.
 nSims=1
+###TRIAL PARAMETERS###
 ##Specify reference toxicity time and target
 T1=6
 Target=.3
 ##Number of Groups
 ##Specify upper bound for determining if the lowest dose is too toxic in a subgroup
 Upper=c(.95,.95)
-##Maximum Sample Size
-Nmax=40
-##Standardized Dose Values and starting dose index
-Dose=sort(rnorm(4))
+#' ##Standardized Dose Values and starting dose index
+Dose=sort(rnorm(5))
 DoseStart=1
-##Hypermeans for linear terms
+##Maximum Sample Size
+Nmax=25
+##Number of patients to run separately
+NSep=0
+##Number of patients to borrow, but NOT cluster
+NBorrow=0
+##Number of patients to fully evaluate or TREAT before ESCALATING
+cohort=3
+##Do we fully evaluate a cohort before escalating?
+FULL=0
+#HYPERPARAMETERS#
+##Hypermeans for baseline terms
 meanmu=2.21
 meanslope=-.57
+##Hypervectors for subgroup specific terms
 MeanInts = c(.46)
 MeanSlopes = c(.04)
-##Accrual Rate
-Accrue=2
-groupprob=c(.5,.5)
-##Fill in Hyperparameter list for MCMC
-Hyper=as.list(c(0,0,0,0))
-Hyper[[1]]=meanmu
-Hyper[[2]]=meanslope
-Hyper[[3]]=MeanInts
-Hyper[[4]]=MeanSlopes
-Family="Uniform"
-Param1 = matrix(c(.2,.3,.4,.5,.6,.1,.2,.3,.4,.5),byrow=TRUE,nrow=2)
-Param2=Param1
+##Hypervariances
 VarInt=5
 VarSlope=1
-SimTrial(nSims,Nmax,T1,Target,Dose,DoseStart,
-Upper,Accrue,groupprob,Hyper,Family,Param1,Param2,VarInt,VarSlope)
-}
-\references{
-[1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination
+######SIMULATION TRUTH####
+##True Accrual Rate
+Accrue=2
+##True Distribution of subgroups
+groupprob=c(.5,.5)
+##True Group Toxicity probabilities at each dose level
+GroupProb =matrix(c(.05,.3,.6,.7,.8,.01,.02,.13,.27,.5),nrow=2,byrow=TRUE)
+##True Simulation distribution
+Family="Uniform"
+SimTruth = as.list(c(0,0))
+SimTruth[[1]]=GroupProb
+SimTruth[[2]]=GroupProb
+phetero=.9
+RESULTS=SimTrial(nSims,Nmax,T1,Target,Dose,DoseStart,
+              Upper,Accrue,groupprob,meanmu,meanslope,
+              MeanInts,MeanSlopes,VarInt,VarSlope,phetero,
+              Family,SimTruth,NSep,NBorrow,cohort,FULL)
+              RESULTS[[1]]
 }

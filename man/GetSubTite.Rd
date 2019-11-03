@@ -5,8 +5,9 @@
 \title{Gives the subgroup specific optimal dose vector.
  Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.}
 \usage{
-GetSubTite(Y, I, Doses, Groups, DoseTried, T1, Target, Upper, Dose, meanmu,
-  meanslope, MeanInts, MeanSlopes, varint, varbeta)
+GetSubTite(Y, I, Doses, Groups, DoseTried, cohort, T1, Target, Upper, Dose,
+  meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta, phetero,
+  Borrow, B)
 }
 \arguments{
 \item{Y}{Vector containing observed event or censoring times.}
@@ -17,7 +18,9 @@ GetSubTite(Y, I, Doses, Groups, DoseTried, T1, Target, Upper, Dose, meanmu,
 
 \item{Groups}{Vector containing group assignment of patients, 1 is baseline group.}
 
-\item{DoseTried}{#Groups X #Doses Matrix that contains 1s and 0s corresponding to whether a given dose in a subgroup had been tried.}
+\item{DoseTried}{Matrix that contains counts in each subgroup for the number of times each dose has been assigned.}
+
+\item{cohort}{Number of patients needed to be assigned at a dose level prior to escalation.}
 
 \item{T1}{Reference time for toxicity.}
 
@@ -37,7 +40,16 @@ GetSubTite(Y, I, Doses, Groups, DoseTried, T1, Target, Upper, Dose, meanmu,
 
 \item{varint}{Prior variance for the intercept parameters.}
 
-\item{varbeta}{Prior variance for the slope parameters.#' @return Returns a list with two objects, a vector of optimal doses and a vector of stopped groups}
+\item{varbeta}{Prior variance for the slope parameters.}
+
+\item{phetero}{Prior probability of heterogeneous subgroups.}
+
+\item{Borrow}{Parameter to specify subgroup borrowing/clustering. 0=No borrowing, 1=Borrowing but no clustering, 2=Borrowing and clustering.}
+
+\item{B}{Number of Iterations to run for MCMC}
+}
+\value{
+Returns a list with two objects, a vector of optimal doses for each subgroup and matrix of posterior toxicity probabilities at each dose level within each subgroup.
 }
 \description{
 Gives the subgroup specific optimal dose vector.
@@ -45,42 +57,58 @@ Gives the subgroup specific optimal dose vector.
 }
 \examples{
 T1=6
-##Reference Time for Toxicity
-Target=.3
-Upper=c(.95,.95)
-n=30
+## Reference Time for Toxicity
+##Number of subgroups
+nGroups=3
+##Number of Doses
+nDose=4
+##What is the starting dose? We want to set all dose tried > cohort that's less than this
+DoseStart=4
+##Sample Size
+n=90
+Target=rep(.3,nGroups)
+Upper=rep(.95,nGroups)
 Y=rep(NA,n)
 I=rep(NA,n)
-Groups = sample(1:2,n,replace=TRUE) - 1
+Groups = sample(1:nGroups,n,replace=TRUE) - 1
 ##Group assignment of patients (MUST BE CODED 0,1,2,...)
-Doses = sample(1:5,n,replace=TRUE)
-##Randomly Generate Dose assignment
-x=c(1,2,3,5,7)
+Doses = sample(1:DoseStart,n,replace=TRUE)
+Dose2=Doses ##Going to hold the numeric dose numbers
+##Randomly Generate Dose values
+x=sort(runif(nDose))  ##Doses are in ascending order
 Dose=(x-mean(x))/sd(x)
 ##Vector of standardized doses
-##Next we generate the toxicity times based on a true toxicity probability matrix
-GroupProb = matrix(rep(NA,length(Dose)*3),nrow=3)
-GroupProb[1,]=c(.18,.25,.45,.66,.74)
- ## These are the true toxicity probabilities for each dose and subgroup
-GroupProb[2,]=c(.10,.15,.30,.50,.60) +.1
+##Randomly generate TRUE group probabilties
+GroupProb = matrix(ncol=nDose,nrow=nGroups)
+for(k in 1:nGroups){
+GroupProb[k,]=sort(runif(nDose,0,Target[k]+.2))
+}
+##Randomly generate patient data from a uniform TTE dist with given probabilities.
 for(b in 1:n){
-I[b]= rbinom(1,1   , GroupProb[(Groups[b]+1),Doses[b]])
+I[b]= rbinom(1,1   , GroupProb[(Groups[b]+1),Dose2[b]])
 if(I[b]==0){ Y[b]=T1 }else{ Y[b]=runif(1,0,T1) }}
-DoseTried=matrix(c(1,1,0,0,0,1,1,1,1,1),ncol=5,byrow=TRUE)
- ##Doses Tried so far in trial
-##Hypermeans for linear terms
-meanmu=-0.4467184
-meanslope= 0.8861634
-MeanInts = -0.5205379
-MeanSlopes = 0.1888923
-Doses=Dose[Doses]
-varint=5
-varbeta=1
-GetSubTite(Y, I,Doses, Groups, DoseTried, T1,
- Target,  Upper, Dose,  meanmu, meanslope,
-  MeanInts,  MeanSlopes ,varint,varbeta)
+##How many patients in each subgroup have been assigned at each dose level?
+DoseTried=cbind(table(Groups,Doses))
+cohort=1 ##Cohort size required for escalation
+##Matrix of umber of patients tried or fully evaluated at each dose level.
+DoseTried[,1:DoseStart]=cohort
+##Hyperparameters
+meanmu=-0.4467184 ##Common Intercept hypermean
+meanslope= 0.8861634 ##Common slope hypermean
+MeanInts = rep(-0.5205379,nGroups-1) ##Group Intercept hypermeans
+MeanSlopes = rep(0.1888923,nGroups-1) ##Group slope hyperneabs
+Dose2=Doses ##Numeric Doses
+Doses=Dose[Doses]  ##Standardize dose value
+varint=5 #Prior Variance of the intercept betas
+varbeta=1 ##Prior Variance of slope betas
+phetero=.9 ##Prior Probability of hetergeneity
+Borrow=0 ##Borrowing specification, 0=none, 1=some, 2=clustering.
+B=5000 ##Number of iterations
+Borrow=2
+GetSubTite(Y, I,Doses, Groups, DoseTried,cohort, T1,
+        Target,  Upper, Dose,  meanmu, meanslope,
+       MeanInts,  MeanSlopes ,varint,varbeta,phetero, Borrow,B)
 }
 \references{
 [1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.
-[2] Package Tutorial, https://adventuresinstatistics.wordpress.com/2017/08/24/the-subtite-package-tutorial/
 }

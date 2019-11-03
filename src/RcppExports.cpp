@@ -6,9 +6,120 @@
 
 using namespace Rcpp;
 
+// LikeStoppedCluster
+double LikeStoppedCluster(arma::vec Y, arma::vec I, arma::vec Dose, arma::vec Group, double mu, double slope, arma::vec a, arma::vec b, double T1, int nPats, arma::vec GroupMem1, arma::vec Stopped);
+RcppExport SEXP _SubTite_LikeStoppedCluster(SEXP YSEXP, SEXP ISEXP, SEXP DoseSEXP, SEXP GroupSEXP, SEXP muSEXP, SEXP slopeSEXP, SEXP aSEXP, SEXP bSEXP, SEXP T1SEXP, SEXP nPatsSEXP, SEXP GroupMem1SEXP, SEXP StoppedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type I(ISEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Dose(DoseSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Group(GroupSEXP);
+    Rcpp::traits::input_parameter< double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< double >::type slope(slopeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type T1(T1SEXP);
+    Rcpp::traits::input_parameter< int >::type nPats(nPatsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type GroupMem1(GroupMem1SEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Stopped(StoppedSEXP);
+    rcpp_result_gen = Rcpp::wrap(LikeStoppedCluster(Y, I, Dose, Group, mu, slope, a, b, T1, nPats, GroupMem1, Stopped));
+    return rcpp_result_gen;
+END_RCPP
+}
+// LikeStoppedSeparate
+double LikeStoppedSeparate(arma::vec Y, arma::vec I, arma::vec Dose, arma::vec Group, arma::vec a, arma::vec b, double T1, int nPats, arma::vec Stopped);
+RcppExport SEXP _SubTite_LikeStoppedSeparate(SEXP YSEXP, SEXP ISEXP, SEXP DoseSEXP, SEXP GroupSEXP, SEXP aSEXP, SEXP bSEXP, SEXP T1SEXP, SEXP nPatsSEXP, SEXP StoppedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type I(ISEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Dose(DoseSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Group(GroupSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type T1(T1SEXP);
+    Rcpp::traits::input_parameter< int >::type nPats(nPatsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Stopped(StoppedSEXP);
+    rcpp_result_gen = Rcpp::wrap(LikeStoppedSeparate(Y, I, Dose, Group, a, b, T1, nPats, Stopped));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GetRandGroup
+int GetRandGroup(arma::vec INC, arma::vec Stopped);
+RcppExport SEXP _SubTite_GetRandGroup(SEXP INCSEXP, SEXP StoppedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type INC(INCSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Stopped(StoppedSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetRandGroup(INC, Stopped));
+    return rcpp_result_gen;
+END_RCPP
+}
+// MCMC
+List MCMC(arma::vec Y, arma::vec I, arma::vec Doses, arma::vec Groups, double T1, arma::vec Target, arma::vec Upper, arma::vec Dose, double meanmu, double meanslope, arma::vec MeanInts, arma::vec MeanSlopes, double varint, double varbeta, double phetero, arma::vec Stopped, int NumPat, int SubRout, double B);
+RcppExport SEXP _SubTite_MCMC(SEXP YSEXP, SEXP ISEXP, SEXP DosesSEXP, SEXP GroupsSEXP, SEXP T1SEXP, SEXP TargetSEXP, SEXP UpperSEXP, SEXP DoseSEXP, SEXP meanmuSEXP, SEXP meanslopeSEXP, SEXP MeanIntsSEXP, SEXP MeanSlopesSEXP, SEXP varintSEXP, SEXP varbetaSEXP, SEXP pheteroSEXP, SEXP StoppedSEXP, SEXP NumPatSEXP, SEXP SubRoutSEXP, SEXP BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type I(ISEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Doses(DosesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Groups(GroupsSEXP);
+    Rcpp::traits::input_parameter< double >::type T1(T1SEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Target(TargetSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Upper(UpperSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Dose(DoseSEXP);
+    Rcpp::traits::input_parameter< double >::type meanmu(meanmuSEXP);
+    Rcpp::traits::input_parameter< double >::type meanslope(meanslopeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type MeanInts(MeanIntsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type MeanSlopes(MeanSlopesSEXP);
+    Rcpp::traits::input_parameter< double >::type varint(varintSEXP);
+    Rcpp::traits::input_parameter< double >::type varbeta(varbetaSEXP);
+    Rcpp::traits::input_parameter< double >::type phetero(pheteroSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Stopped(StoppedSEXP);
+    Rcpp::traits::input_parameter< int >::type NumPat(NumPatSEXP);
+    Rcpp::traits::input_parameter< int >::type SubRout(SubRoutSEXP);
+    Rcpp::traits::input_parameter< double >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(MCMC(Y, I, Doses, Groups, T1, Target, Upper, Dose, meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta, phetero, Stopped, NumPat, SubRout, B));
+    return rcpp_result_gen;
+END_RCPP
+}
+// MCMCSIM
+arma::mat MCMCSIM(arma::vec Y, arma::vec I, arma::vec Doses, arma::vec Groups, double T1, arma::vec Target, arma::vec Upper, arma::vec Dose, double meanmu, double meanslope, arma::vec MeanInts, arma::vec MeanSlopes, double varint, double varbeta, double phetero, arma::vec Stopped, int NumPat, int SubRout, double B);
+RcppExport SEXP _SubTite_MCMCSIM(SEXP YSEXP, SEXP ISEXP, SEXP DosesSEXP, SEXP GroupsSEXP, SEXP T1SEXP, SEXP TargetSEXP, SEXP UpperSEXP, SEXP DoseSEXP, SEXP meanmuSEXP, SEXP meanslopeSEXP, SEXP MeanIntsSEXP, SEXP MeanSlopesSEXP, SEXP varintSEXP, SEXP varbetaSEXP, SEXP pheteroSEXP, SEXP StoppedSEXP, SEXP NumPatSEXP, SEXP SubRoutSEXP, SEXP BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type I(ISEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Doses(DosesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Groups(GroupsSEXP);
+    Rcpp::traits::input_parameter< double >::type T1(T1SEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Target(TargetSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Upper(UpperSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Dose(DoseSEXP);
+    Rcpp::traits::input_parameter< double >::type meanmu(meanmuSEXP);
+    Rcpp::traits::input_parameter< double >::type meanslope(meanslopeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type MeanInts(MeanIntsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type MeanSlopes(MeanSlopesSEXP);
+    Rcpp::traits::input_parameter< double >::type varint(varintSEXP);
+    Rcpp::traits::input_parameter< double >::type varbeta(varbetaSEXP);
+    Rcpp::traits::input_parameter< double >::type phetero(pheteroSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type Stopped(StoppedSEXP);
+    Rcpp::traits::input_parameter< int >::type NumPat(NumPatSEXP);
+    Rcpp::traits::input_parameter< int >::type SubRout(SubRoutSEXP);
+    Rcpp::traits::input_parameter< double >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(MCMCSIM(Y, I, Doses, Groups, T1, Target, Upper, Dose, meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta, phetero, Stopped, NumPat, SubRout, B));
+    return rcpp_result_gen;
+END_RCPP
+}
 // SimTrial1
-List SimTrial1(int nSims, int Nmax, double T1, arma::vec Target, arma::vec Dose, arma::vec DoseStart, arma::vec Upper, double Accrue, arma::vec groupprob, int Family, arma::mat Param1, arma::mat Param2, double meanmu, double meanslope, arma::vec MeanInts, arma::vec MeanSlopes, double varint, double varbeta);
-RcppExport SEXP SubTite_SimTrial1(SEXP nSimsSEXP, SEXP NmaxSEXP, SEXP T1SEXP, SEXP TargetSEXP, SEXP DoseSEXP, SEXP DoseStartSEXP, SEXP UpperSEXP, SEXP AccrueSEXP, SEXP groupprobSEXP, SEXP FamilySEXP, SEXP Param1SEXP, SEXP Param2SEXP, SEXP meanmuSEXP, SEXP meanslopeSEXP, SEXP MeanIntsSEXP, SEXP MeanSlopesSEXP, SEXP varintSEXP, SEXP varbetaSEXP) {
+List SimTrial1(int nSims, int Nmax, double T1, arma::vec Target, arma::vec Dose, arma::vec DoseStart, arma::vec Upper, double Accrue, arma::vec groupprob, int Family, arma::mat Param1, arma::mat Param2, double meanmu, double meanslope, arma::vec MeanInts, arma::vec MeanSlopes, double varint, double varbeta, double phetero, double NSep, double NBorrow, int cohort, int FULLY);
+RcppExport SEXP _SubTite_SimTrial1(SEXP nSimsSEXP, SEXP NmaxSEXP, SEXP T1SEXP, SEXP TargetSEXP, SEXP DoseSEXP, SEXP DoseStartSEXP, SEXP UpperSEXP, SEXP AccrueSEXP, SEXP groupprobSEXP, SEXP FamilySEXP, SEXP Param1SEXP, SEXP Param2SEXP, SEXP meanmuSEXP, SEXP meanslopeSEXP, SEXP MeanIntsSEXP, SEXP MeanSlopesSEXP, SEXP varintSEXP, SEXP varbetaSEXP, SEXP pheteroSEXP, SEXP NSepSEXP, SEXP NBorrowSEXP, SEXP cohortSEXP, SEXP FULLYSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -30,39 +141,23 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type MeanSlopes(MeanSlopesSEXP);
     Rcpp::traits::input_parameter< double >::type varint(varintSEXP);
     Rcpp::traits::input_parameter< double >::type varbeta(varbetaSEXP);
-    rcpp_result_gen = Rcpp::wrap(SimTrial1(nSims, Nmax, T1, Target, Dose, DoseStart, Upper, Accrue, groupprob, Family, Param1, Param2, meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GetDose1
-arma::vec GetDose1(arma::vec Y, arma::vec I, arma::vec Doses, arma::vec Groups, arma::mat DoseTried, double T1, arma::vec Target, arma::vec Upper, arma::vec Dose, double meanmu, double meanslope, arma::vec MeanInts, arma::vec MeanSlopes, double varint, double varbeta);
-RcppExport SEXP SubTite_GetDose1(SEXP YSEXP, SEXP ISEXP, SEXP DosesSEXP, SEXP GroupsSEXP, SEXP DoseTriedSEXP, SEXP T1SEXP, SEXP TargetSEXP, SEXP UpperSEXP, SEXP DoseSEXP, SEXP meanmuSEXP, SEXP meanslopeSEXP, SEXP MeanIntsSEXP, SEXP MeanSlopesSEXP, SEXP varintSEXP, SEXP varbetaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type I(ISEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type Doses(DosesSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type Groups(GroupsSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type DoseTried(DoseTriedSEXP);
-    Rcpp::traits::input_parameter< double >::type T1(T1SEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type Target(TargetSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type Upper(UpperSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type Dose(DoseSEXP);
-    Rcpp::traits::input_parameter< double >::type meanmu(meanmuSEXP);
-    Rcpp::traits::input_parameter< double >::type meanslope(meanslopeSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type MeanInts(MeanIntsSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type MeanSlopes(MeanSlopesSEXP);
-    Rcpp::traits::input_parameter< double >::type varint(varintSEXP);
-    Rcpp::traits::input_parameter< double >::type varbeta(varbetaSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetDose1(Y, I, Doses, Groups, DoseTried, T1, Target, Upper, Dose, meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta));
+    Rcpp::traits::input_parameter< double >::type phetero(pheteroSEXP);
+    Rcpp::traits::input_parameter< double >::type NSep(NSepSEXP);
+    Rcpp::traits::input_parameter< double >::type NBorrow(NBorrowSEXP);
+    Rcpp::traits::input_parameter< int >::type cohort(cohortSEXP);
+    Rcpp::traits::input_parameter< int >::type FULLY(FULLYSEXP);
+    rcpp_result_gen = Rcpp::wrap(SimTrial1(nSims, Nmax, T1, Target, Dose, DoseStart, Upper, Accrue, groupprob, Family, Param1, Param2, meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta, phetero, NSep, NBorrow, cohort, FULLY));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"SubTite_SimTrial1", (DL_FUNC) &SubTite_SimTrial1, 18},
-    {"SubTite_GetDose1", (DL_FUNC) &SubTite_GetDose1, 15},
+    {"_SubTite_LikeStoppedCluster", (DL_FUNC) &_SubTite_LikeStoppedCluster, 12},
+    {"_SubTite_LikeStoppedSeparate", (DL_FUNC) &_SubTite_LikeStoppedSeparate, 9},
+    {"_SubTite_GetRandGroup", (DL_FUNC) &_SubTite_GetRandGroup, 2},
+    {"_SubTite_MCMC", (DL_FUNC) &_SubTite_MCMC, 19},
+    {"_SubTite_MCMCSIM", (DL_FUNC) &_SubTite_MCMCSIM, 19},
+    {"_SubTite_SimTrial1", (DL_FUNC) &_SubTite_SimTrial1, 23},
     {NULL, NULL, 0}
 };
 

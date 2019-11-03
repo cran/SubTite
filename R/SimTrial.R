@@ -12,53 +12,79 @@
 #' @param Accrue Expected montly patient accrual rate.
 #' @param groupprob Probability vector of subgroup assignment.
 #' @param Upper Cutoff values used to determine if accrual in a subgroup should be suspended.
-#' @param Hyper List of size 4 containing the prior mean of the baseline slope, the baseline intercept, and the prior mean vectors for group specific intercepts and slopes.
+#' @param meanmu Prior mean of the baseline intercept parameter.
+#' @param meanslope Prior mean of the baseline slope parameter.
+#' @param MeanInts G-1 length vector of subgroup specific prior intercept means.
+#' @param MeanSlopes G-1 length vector of subgroup specific prior slope means.
 #' @param Family What distribution Family to simulate from. Options include: Exponential,Gamma, Lognormal, Uniform, Weibull.
-#' @param Param1 #Groups X #Doses Matrix containing the first parameter for each subgroup and dose. For the uniform distribution, this is the probability of toxicity in a given group.
-#' @param Param2 #Groups X #Doses Matrix containing the second parameter for each subgroup and dose for the Weibull, Gamma and Lognormal Distributions. This argument is not used for uniform and exponential distribution families.
-#' @param VarInt Prior Variance of Intercept Parameters
-#' @param VarSlope Prior Variance of Slope Parameters
-#' @return Returns a list with five simulation outputs: The vector of optimal doses chosen, the number of toxicities per group, the trial times of each simulated trial, the vector containing the doses administered in a trial and the group assignments of each patient in a simulated trial.
-#' @references
-#' [1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination
+#' @param SimTruth List of 2 #Groups by #Doses matrices containing the true parameter values needed for simulating from different true time to toxicity distributions.
+#' @param VarInt Prior Variance of Intercept Parameters.
+#' @param VarSlope Prior Variance of Slope Parameters.
+#' @param phetero Prior prob of clustering
+#' @param NSep Number of patients to assign based on no borrowing.
+#' @param NBorrow Number of patients to assign based on no clustering
+#' @param cohort Number of patients to enroll before escalating.
+#' @param FULL Do we have to fully evaluate a cohort before escalating?
+#' @return A list with first entry corresponding to summaries of the operating characteristics of the design including
 #' @examples
 #' ##Note: nSims  should be set larger than the example below.
 #' nSims=1
+#' ###TRIAL PARAMETERS###
 #' ##Specify reference toxicity time and target
 #' T1=6
 #' Target=.3
 #' ##Number of Groups
 #' ##Specify upper bound for determining if the lowest dose is too toxic in a subgroup
 #' Upper=c(.95,.95)
-#' ##Maximum Sample Size
-#' Nmax=40
-#' ##Standardized Dose Values and starting dose index
-#' Dose=sort(rnorm(4))
+#' #' ##Standardized Dose Values and starting dose index
+#' Dose=sort(rnorm(5))
 #' DoseStart=1
-#' ##Hypermeans for linear terms
+#' ##Maximum Sample Size
+#' Nmax=25
+#' ##Number of patients to run separately
+#' NSep=0
+#' ##Number of patients to borrow, but NOT cluster
+#' NBorrow=0
+#' ##Number of patients to fully evaluate or TREAT before ESCALATING
+#' cohort=3
+#' ##Do we fully evaluate a cohort before escalating?
+#' FULL=0
+#' #HYPERPARAMETERS#
+#' ##Hypermeans for baseline terms
 #' meanmu=2.21
 #' meanslope=-.57
+#' ##Hypervectors for subgroup specific terms
 #' MeanInts = c(.46)
 #' MeanSlopes = c(.04)
-#' ##Accrual Rate
-#' Accrue=2
-#' groupprob=c(.5,.5)
-#' ##Fill in Hyperparameter list for MCMC
-#' Hyper=as.list(c(0,0,0,0))
-#' Hyper[[1]]=meanmu
-#' Hyper[[2]]=meanslope
-#' Hyper[[3]]=MeanInts
-#' Hyper[[4]]=MeanSlopes
-#' Family="Uniform"
-#' Param1 = matrix(c(.2,.3,.4,.5,.6,.1,.2,.3,.4,.5),byrow=TRUE,nrow=2)
-#' Param2=Param1
+#' ##Hypervariances
 #' VarInt=5
 #' VarSlope=1
-#' SimTrial(nSims,Nmax,T1,Target,Dose,DoseStart,
-#' Upper,Accrue,groupprob,Hyper,Family,Param1,Param2,VarInt,VarSlope)
+#' ######SIMULATION TRUTH####
+#' ##True Accrual Rate
+#' Accrue=2
+#' ##True Distribution of subgroups
+#' groupprob=c(.5,.5)
+#' ##True Group Toxicity probabilities at each dose level
+#' GroupProb =matrix(c(.05,.3,.6,.7,.8,.01,.02,.13,.27,.5),nrow=2,byrow=TRUE)
+#' ##True Simulation distribution
+#' Family="Uniform"
+#' SimTruth = as.list(c(0,0))
+#' SimTruth[[1]]=GroupProb
+#' SimTruth[[2]]=GroupProb
+#' phetero=.9
+#' RESULTS=SimTrial(nSims,Nmax,T1,Target,Dose,DoseStart,
+#'               Upper,Accrue,groupprob,meanmu,meanslope,
+#'               MeanInts,MeanSlopes,VarInt,VarSlope,phetero,
+#'               Family,SimTruth,NSep,NBorrow,cohort,FULL)
+#'               RESULTS[[1]]
 #' @export
-SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,Upper,Accrue,groupprob,Hyper,Family,Param1,Param2,VarInt,VarSlope){
+SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,Upper,Accrue,groupprob,meanmu,meanslope,MeanInts,MeanSlopes,
+                    VarInt,VarSlope,phetero,Family,SimTruth,NSep,NBorrow,cohort,FULL){
 
+pmono=phetero
+
+  Param1=SimTruth[[1]]
+  Param2=SimTruth[[2]]
 
 
   nGroups=nrow(Param1)
@@ -66,7 +92,7 @@ SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,Upper,Accrue,groupprob,
   nDose=ncol(Param1)
   upper=Upper
 
-  Dist = matrix(rep(NA,nSims*nrow(Param1)),nrow=nSims)
+  Dist = matrix(ncol=nGroups,nrow=nSims)
 
 
   target=Target
@@ -75,14 +101,9 @@ SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,Upper,Accrue,groupprob,
 
 
 
-
-  B=2000
-  meanmu = Hyper[[1]]
-  meanslope=Hyper[[2]]
-  MeanInts=Hyper[[3]]
-  MeanSlopes=Hyper[[4]]
   nDoses=length(Dose)
   target=Target
+
 
 
   ##If length(Target)==1 or length(DoseStart)==1, let's make a vector containing the group specific targets
@@ -115,6 +136,34 @@ SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,Upper,Accrue,groupprob,
     }
 
   }
+
+
+  ##Now check for errors...
+
+
+  ERRHOLD=c(length(Target), nrow(Param1), nrow(Param2), length(Upper), length(MeanInts)+1, length(MeanSlopes)+1)
+
+  HOLD=0
+  ##Check for errors in dimension specification
+  for(k in 1:length(ERRHOLD)){
+    for(m in 1:length(ERRHOLD)){
+      if(ERRHOLD[k] != ERRHOLD[m]){
+        HOLD=1
+      }
+    }
+  }
+
+  if(HOLD==1){
+    message("Dose tried matrix,target toxicity vector, toxicity threshold, or subgroup hyperparameter vector has incorrect dimensions")
+  }
+
+
+
+  ##Repackage MeanInts and MeanSlopes
+  MeanInts=c(0,MeanInts)
+  MeanSlopes=c(0,MeanSlopes)
+
+
 
 
 
@@ -162,123 +211,179 @@ SimTrial = function(nSims,Nmax,T1,Target,Dose, DoseStart,Upper,Accrue,groupprob,
 
 
   ##Feed Everything into the trial
-Results= SimTrial1( nSims, Nmax,  T1, Target,  Dose,  DoseStart,Upper, Accrue, groupprob,
-                    Fam, Param1,Param2,meanmu, meanslope,MeanInts, MeanSlopes,VarInt,VarSlope )
+  Results= SimTrial1( nSims, Nmax,  T1, Target,  Dose,  DoseStart,Upper, Accrue, groupprob,
+                      Fam, Param1,Param2,meanmu, meanslope,MeanInts, MeanSlopes,VarInt,VarSlope,pmono, NSep,NBorrow, cohort, FULL )
 
-DoseOpt = Results[[1]]
-NTox=Results[[2]]
+  DoseOpt = Results[[1]]
+  NTox=Results[[2]]
 
 
-##Calculate \Delta_1,\Delta_2
-for(b in 1:nSims){
+  ##Calculate \Delta_1,\Delta_2
+  for(b in 1:nSims){
 
-  for(m in 1:nGroups){
-    if(DoseOpt[b,m]==0){
-      Dist[b,m]=POPT[m]
-    }else{
-      Dist[b,m]=abs(GroupProb[m,DoseOpt[b,m]]-POPT[m])
+    for(m in 1:nGroups){
+      if(DoseOpt[b,m]==0){
+        Dist[b,m]=POPT[m]
+      }else{
+        Dist[b,m]=abs(GroupProb[m,DoseOpt[b,m]]-POPT[m])
+      }
     }
+
+
+
+
+
+
+
   }
 
 
 
-
-
-
-
-}
-
-
-
-  cat("Simulations finished: Displaying results
-
-      ")
 
 
   ##Obtain the prob of best
 
   OptProb=WHICHOPT
-
-
+  ###GET Psel and PM
+  PM=OptProb
   for(m in 1:nGroups){
     OptProb[m]=mean(DoseOpt[,m]==WHICHOPT[m])
-  }
+    if(WHICHOPT[m]==1){
+      PM[m]=mean(DoseOpt[,m] %in% c(1,2))
+    }else{
+      if(WHICHOPT[m]==ncol(GroupProb)){
+        PM[m]=mean(DoseOpt[,m] %in% c(ncol(GroupProb),ncol(GroupProb)-1))
+
+      }else{
+        ##Dose in the middle some where
+        PM[m]=mean(DoseOpt[,m] %in% c(WHICHOPT[m]-1,WHICHOPT[m],WHICHOPT[m]+1))
+
+      }
+
+
+    }
+    }
 
   for(m in 1:nGroups){
     if(GroupProb[m,1]>Target[m]){
       OptProb[m]=NA
       Dist[m]=NA
+      PM[m]=NA
     }
   }
 
 
-  cat("Subgroup Specific Selection Probability of the Optimal Dose", OptProb )
 
 
-  cat("
 
-      Frequencies of Optimal Dose Selected for each Subgroup")
 
-  for(m in 1:nGroups){
 
-    cat("
-        Group", m,"
-        ")
 
-    print(table(DoseOpt[,m])/nSims)
+
+  Z=as.list(rep(0,8))
+  GroupProb=as.data.frame(GroupProb)
+
+  for(k in 1:length(MeanInts)){
+    rownames(GroupProb)[k]=paste0("Subgroup ",k)
   }
 
 
-  cat("
-      Average true toxicity probability difference between chosen dose and the optimal dose
 
-      ")
-
-  print(colMeans(Dist))
+  for(k in 1:ncol(GroupProb)){
+    colnames(GroupProb)[k]=paste0(k)
+  }
 
 
+  Z[[1]]=GroupProb
 
-  cat("
-      Average number of Toxicities for each Subgroup
+  X=data.frame(matrix(ncol=length(Dose)+1,nrow=length(MeanInts)))
 
-      ")
+  for(k in 1:nrow(X)){
+    rownames(X)[k]=paste0("Subgroup ",k)
+  }
 
-  print(colMeans(NTox))
+  for(k in 1:nrow(X)){
+    for(j in 1:length(Dose)){
+      X[k,j]=mean(DoseOpt[,k]==j)
+    }
 
-TrialTimes=Results[[3]]
+    j=length(Dose)+1
+    X[k,j]=mean(DoseOpt[,k]==0)
 
-
-
-cat("
-      Average number Treated for each Subgroup
-
-    ")
-
-print(table(Results[[5]])/nSims)
+  }
 
 
 
 
+  for(k in 1:length(Dose)){
+    colnames(X)[k]=paste0(k)
+  }
 
-  cat("
-      Average Trial Time
 
-      ")
-  print(mean(TrialTimes))
+  colnames(X)[length(Dose)+1]="P[Stop]"
+
+  Z[[2]]=X
+
+
+
+  NTREATED=Results[[5]]
+  GROUPS=Results[[6]]
+  GROUPS=GROUPS+1
+
+
+  X=data.frame(matrix(ncol=length(Dose),nrow=length(MeanInts)))
+  for(k in 1:length(MeanInts)){
+    rownames(X)[k]=paste0("Subgroup ",k)
+  }
+  for(k in 1:nrow(X)){
+    for(j in 1:length(Dose)){
+      NTREATED1=NTREATED[GROUPS==k]
+      X[k,j]=sum(NTREATED1==Dose[j])
+
+    }
+  }
+
+  X=X/nSims
+
+
+
+  for(k in 1:length(Dose)){
+    colnames(X)[k]=paste0(k)
+  }
+
+
+  Z[[3]]=X
+  Z[[4]]=colMeans(Dist)
+  Z[[5]]=OptProb
+  Z[[6]]=PM
+  Z[[7]]=colMeans(NTox)
+  Z[[8]]=mean(Results[[3]])
+  names(Z)=c("True Toxicity Probabilities","Dose Selection Probabilities",
+             "Average # Treated at each Dose","Delta","Psel", "+- MTD","Average # of Toxicities","Average Trial Duration")
+
+
+
 
   List1 = as.list(rep(0,6))
   List1[[1]]=DoseOpt
   List1[[2]]=Dist
   List1[[3]]=NTox
-  List1[[4]]=TrialTimes
+  List1[[4]]=Results[[3]]
 
 
   List1[[5]]=Results[[4]]
   List1[[6]]=Results[[5]]
+  List1[[7]]=Results[[6]]
 
+  names(List1)=c("Optimal Dose Selected","Delta Values", "Number of Toxicities","Trial Times","Toxicity Indicators",
+                 "Doses Given","Subgroup Indicators")
 
-  return(List1)
+  Z1 = as.list(c(0,0))
+
+  Z1[[1]]=Z
+  Z1[[2]]=List1
+  names(Z1)=c("Simulation Summaries","Simulation Outputs")
+  return(Z1)
 
 
 }
-
