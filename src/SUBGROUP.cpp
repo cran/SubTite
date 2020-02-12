@@ -584,6 +584,7 @@ OptDose.zeros();
   //Proposal for combinations
   GroupMemProp=GroupMem;
 
+
   //No Borrowing, No Clustering
 
   if(SubRout==0){
@@ -602,7 +603,7 @@ OptDose.zeros();
 
           for(k=0;k<G;k++){
             if((IntA[k]/NumA[k])>.5){
-              avar[k]=avar[k];
+              avar[k]=avar[k]*2;
             }
 
             if((IntA[k]/NumA[k])<.2){
@@ -772,7 +773,6 @@ OptDose.zeros();
     }
 
   }
-
 
 
   //Borrow strength, No cluster
@@ -1202,9 +1202,10 @@ OptDose.zeros();
 
 
 
+
       U=as_scalar(arma::randu(1));
       //Global Clustering move
-      if((3*U)<1){
+      if(U<.333333){
         //Cluster or uncluster ALL groups
         if(sum(INVEC)==G){
           //All groups are unclustered.
@@ -1548,7 +1549,7 @@ OptDose.zeros();
 
             //Add or delete move here
 
-            if(U<(1/3)){
+            if(U<.66666){
               //Delete randomly
 
               GroupMemProp=GroupMem;
@@ -2095,7 +2096,7 @@ Doses2.zeros();
 
           for(k=0;k<G;k++){
             if((IntA[k]/NumA[k])>.5){
-              avar[k]=avar[k];
+              avar[k]=avar[k]*2;
             }
 
             if((IntA[k]/NumA[k])<.2){
@@ -2265,7 +2266,6 @@ Doses2.zeros();
     }
 
   }
-
 
 
   //Borrow strength, No cluster
@@ -2698,7 +2698,7 @@ Doses2.zeros();
 
       U=as_scalar(arma::randu(1));
       //Global Clustering move
-      if((3*U)<1){
+      if(U<.333333){
         //Cluster or uncluster ALL groups
         if(sum(INVEC)==G){
           //All groups are unclustered.
@@ -3042,7 +3042,7 @@ Doses2.zeros();
 
             //Add or delete move here
 
-            if(U<(1/3)){
+            if(U<.66666){
               //Delete randomly
 
               GroupMemProp=GroupMem;
