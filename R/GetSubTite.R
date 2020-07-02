@@ -127,6 +127,8 @@ GetSubTite=function(Y, I,Doses, Groups, DoseTried, cohort,T1, Target,
     ##Check if ALL groups are stopped, if so run a separate trial in each.
     if(Borrow>0){
       if(sum(Stopped)==length(Stopped)){
+        message("Borrowing has caused all groups to stop due to excessive toxicity.
+Separate models will be fit to each group to ensure the design is not stopping too early due to borrowing.")
         RESULTS=MCMC( Y,I,  Doses,  Groups,  T1,  Target,  Upper, Dose, meanmu,  meanslope,
                       MeanInts,  MeanSlopes, varint,  varbeta, phetero,    Stopped=rep(0,nrow(DoseTried)),  length(Y),  0,B)
         RESULTS1=RESULTS ##HOLDER FOR STOPPED GROUPS

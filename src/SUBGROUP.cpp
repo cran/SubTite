@@ -543,9 +543,9 @@ List MCMC( arma::vec Y, //Vector of Times
   arma::mat MeanVec(G,nDose);
   arma::vec NTox(G);
   arma::vec OptDose(G);
-MeanVec.zeros();
-NTox.zeros();
-OptDose.zeros();
+  MeanVec.zeros();
+  NTox.zeros();
+  OptDose.zeros();
   arma::mat CLUST(B1,G);
   CLUST.zeros();
   arma::mat INSTORE=CLUST;
@@ -1795,7 +1795,7 @@ OptDose.zeros();
         }
       }
 
-      STOPPROB(k)=eta2/(Upper[k]*DoseProb.n_rows);
+      STOPPROB(k)=eta2/DoseProb.n_rows;
 
       //Is this bigger than our posterior probability threshold???
       if(eta2>(Upper[k]*DoseProb.n_rows)){
@@ -2057,10 +2057,10 @@ arma::mat MCMCSIM( arma::vec Y, //Vector of Times
   arma::vec Groups2;
   arma::vec Doses2;
 
-Y2.zeros();
-I2.zeros();
-Groups2.zeros();
-Doses2.zeros();
+  Y2.zeros();
+  I2.zeros();
+  Groups2.zeros();
+  Doses2.zeros();
 
   //Start all parameters at their prior distributions
   mu=meanmu;
@@ -2531,10 +2531,9 @@ Doses2.zeros();
 
   }
 
+  int m7=0; //For clustering
 
   //Borrow strength, AND cluster
-
-
   if(SubRout==2){
 
 
@@ -3063,6 +3062,21 @@ Doses2.zeros();
               aprop(g) =a(j);
               bprop(g)=b(j);
 
+
+              //Make sure that the other groups also move wiith this one
+              //i.e. for all m: \zeta_m = g, set \zeta_m = j.
+              //Also... Set a_m = a_j and b_m = a_j for all these.
+              for(m7=0;m7<aprop.n_rows;m7++){
+if(GroupMem(m7)==g){
+  //Used to be clustered with group g, everything should go with it!
+  aprop(m7)=a(j);
+  bprop(m7)=b(j);
+  GroupMemProp(m7)=j;
+
+}
+              }
+
+
               alpha=0;
               //Here are the old priors ALL are UNCLUSTERED
 
@@ -3114,6 +3128,10 @@ Doses2.zeros();
               //Cluster
               aprop(g) =a(g)+as_scalar(arma::randn(1));
               bprop(g)=b(g)+as_scalar(arma::randn(1));
+
+              //Nothing else should move with group g parameters. Group g is now being unclustered,
+              //So nothing else can be clustered on top of group g at this iteration.
+
 
               alpha=0;
               //Here are the old priors ALL are UNCLUSTERED
@@ -3288,7 +3306,7 @@ Doses2.zeros();
         }
       }
 
-      STOPPROB(k)=eta2/(Upper[k]*DoseProb.n_rows);
+      STOPPROB(k)=eta2/DoseProb.n_rows;
 
       //Is this bigger than our posterior probability threshold???
       if(eta2>(Upper[k]*DoseProb.n_rows)){
@@ -3435,12 +3453,12 @@ List SimTrial1(int nSims, //Number of Simulations to Run
   arma::vec Doses(Nmax);
   arma::vec Times(Nmax);
   arma::vec ACC(Nmax);
-Y.zeros();
-I.zeros();
-Groups.zeros();
-Doses.zeros();
-Times.zeros();
-ACC.zeros();
+  Y.zeros();
+  I.zeros();
+  Groups.zeros();
+  Doses.zeros();
+  Times.zeros();
+  ACC.zeros();
 
 
   //Innitialize parameters for MCMC
@@ -3560,18 +3578,18 @@ ACC.zeros();
   arma::vec GroupVec(nDose);
   arma::vec TriedGroups(J);
 
-MeanVec.zeros();
-NTox.zeros();
-OptDose.zeros();
-StoppedGroups.zeros();
-SuspendGroups.zeros();
-GLast.zeros();
-nTreated.zeros();
-TrialTimes.zeros();
-OptimalDoses.zeros();
-NTox.zeros();
-GroupVec.zeros();
-TriedGroups.zeros();
+  MeanVec.zeros();
+  NTox.zeros();
+  OptDose.zeros();
+  StoppedGroups.zeros();
+  SuspendGroups.zeros();
+  GLast.zeros();
+  nTreated.zeros();
+  TrialTimes.zeros();
+  OptimalDoses.zeros();
+  NTox.zeros();
+  GroupVec.zeros();
+  TriedGroups.zeros();
 
   arma::mat DoseStore(nSims,Nmax);
   arma::mat GroupStore(nSims,Nmax);
@@ -3857,7 +3875,6 @@ TriedGroups.zeros();
 
 
 
-
       //Determine Optimal Dose
       k=Group;
 
@@ -3935,12 +3952,10 @@ TriedGroups.zeros();
       //Now we have the subgroup specific optimal doses in the vector OptDose
 
 
-
       //Now let's see if the dose is bigger than the largest dose.
       if(OptDose[Group]>=nDose){
         OptDose[Group]=nDose-1;
       }
-
 
 
       //Assign Patient to subgroup, optdose, add accrual time.
@@ -4028,7 +4043,6 @@ TriedGroups.zeros();
       trialtime=trialtime+T1;
 
 
-      //      Rprintf("LAST ONE");
 
       StoppedGroups.zeros();
 
@@ -4080,12 +4094,11 @@ TriedGroups.zeros();
         if(sum(StoppedGroups)==J){
           StoppedGroups.zeros();
           HOLD=  MCMCSIM(  Y,  I,  Doses,  Groups,  T1,  Target,  Upper,  Dose,  meanmu,
-                           meanslope,  MeanInts, MeanSlopes,  varint,  varbeta, phetero,  StoppedGroups,  i+1,  0,  B );
+                           meanslope,  MeanInts, MeanSlopes,  varint,  varbeta, phetero,  StoppedGroups, Nmax,  0,  B );
           StoppedGroups = HOLD.col(Dose.n_rows);
         }
 
       }
-
 
 
 
@@ -4218,7 +4231,6 @@ TriedGroups.zeros();
     }
 
 
-    //     Rprintf("SIM DONE");
 
     //End Trial simulation rep
   }
