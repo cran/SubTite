@@ -5,22 +5,46 @@
 \title{Gives the subgroup specific optimal dose vector.
  Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.}
 \usage{
-GetSubTite(Y, I, Doses, Groups, DoseTried, cohort, T1, Target, Upper, Dose,
-  meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta, phetero,
-  Borrow, B)
+GetSubTite(
+  Y,
+  I,
+  Doses,
+  Groups,
+  Include,
+  ID,
+  cohort,
+  Conservative,
+  T1,
+  Target,
+  Upper,
+  Dose,
+  meanmu,
+  meanslope,
+  MeanInts,
+  MeanSlopes,
+  varint,
+  varbeta,
+  phetero,
+  Borrow,
+  B
+)
 }
 \arguments{
 \item{Y}{Vector containing observed event or censoring times.}
 
 \item{I}{Vector containing event indicators (1 if patient experiences an event for a patient).}
 
-\item{Doses}{Vector containing Doses of patients in trial.}
+\item{Doses}{Vector containing numerical doses assigned to patients in the trial.}
 
 \item{Groups}{Vector containing group assignment of patients, 1 is baseline group.}
 
-\item{DoseTried}{Matrix that contains counts in each subgroup for the number of times each dose has been assigned.}
+\item{Include}{Binary vector indicating whether each patient record should be included in the decision making process.}
+
+\item{ID}{Vector of patient IDs. Can be numeric or character valued.}
 
 \item{cohort}{Number of patients needed to be assigned at a dose level prior to escalation.}
+
+\item{Conservative}{Binary Indicator of Whether conservative escalation, i.e. not allowing escalation until cohort patients have been fully evaluated at the highest tried dose level.}
 
 \item{T1}{Reference time for toxicity.}
 
@@ -56,58 +80,37 @@ Gives the subgroup specific optimal dose vector.
  Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.
 }
 \examples{
-T1=6
-## Reference Time for Toxicity
-##Number of subgroups
-nGroups=3
-##Number of Doses
-nDose=4
-##What is the starting dose? We want to set all dose tried > cohort that's less than this
-DoseStart=4
-##Sample Size
-n=90
-Target=rep(.3,nGroups)
-Upper=rep(.95,nGroups)
-Y=rep(NA,n)
-I=rep(NA,n)
-Groups = sample(1:nGroups,n,replace=TRUE) - 1
-##Group assignment of patients (MUST BE CODED 0,1,2,...)
-Doses = sample(1:DoseStart,n,replace=TRUE)
-Dose2=Doses ##Going to hold the numeric dose numbers
-##Randomly Generate Dose values
-x=sort(runif(nDose))  ##Doses are in ascending order
-Dose=(x-mean(x))/sd(x)
-##Vector of standardized doses
-##Randomly generate TRUE group probabilties
-GroupProb = matrix(ncol=nDose,nrow=nGroups)
-for(k in 1:nGroups){
-GroupProb[k,]=sort(runif(nDose,0,Target[k]+.2))
-}
-##Randomly generate patient data from a uniform TTE dist with given probabilities.
-for(b in 1:n){
-I[b]= rbinom(1,1   , GroupProb[(Groups[b]+1),Dose2[b]])
-if(I[b]==0){ Y[b]=T1 }else{ Y[b]=runif(1,0,T1) }}
+T1=28 ##Reference time for toxicity
+Target=rep(.3,2) ##Target toxicity probability
+Upper=rep(.95,2) ##Upper cutoffs for excessive toxicity
 ##How many patients in each subgroup have been assigned at each dose level?
-DoseTried=cbind(table(Groups,Doses))
-cohort=1 ##Cohort size required for escalation
+cohort=3 ##Cohort size required for escalation
+Conservative = 1 ##Conservative escalation
+##Only can escalate with a fully evaluated cohort at the highest dose level.
 ##Matrix of umber of patients tried or fully evaluated at each dose level.
-DoseTried[,1:DoseStart]=cohort
 ##Hyperparameters
 meanmu=-0.4467184 ##Common Intercept hypermean
 meanslope= 0.8861634 ##Common slope hypermean
-MeanInts = rep(-0.5205379,nGroups-1) ##Group Intercept hypermeans
-MeanSlopes = rep(0.1888923,nGroups-1) ##Group slope hyperneabs
-Dose2=Doses ##Numeric Doses
-Doses=Dose[Doses]  ##Standardize dose value
+MeanInts = -0.5205379 ##Group Intercept hypermeans
+MeanSlopes = 0.1888923 ##Group slope hyperneabs
 varint=5 #Prior Variance of the intercept betas
 varbeta=1 ##Prior Variance of slope betas
 phetero=.9 ##Prior Probability of hetergeneity
 Borrow=0 ##Borrowing specification, 0=none, 1=some, 2=clustering.
 B=5000 ##Number of iterations
 Borrow=2
-GetSubTite(Y, I,Doses, Groups, DoseTried,cohort, T1,
-        Target,  Upper, Dose,  meanmu, meanslope,
-       MeanInts,  MeanSlopes ,varint,varbeta,phetero, Borrow,B)
+Y=c(28,26,29,28,29,5,1)
+RawDose=c(350,420,530,660,825)
+Dose=(RawDose-mean(RawDose))/sd(RawDose)
+I <- c(0,0,0,0,0,0,0)
+Doses <- rep(2,7)
+Groups <- c(0,1,1,0,0,1,1)
+Include <- rep(1,7)
+ID=1:length(Y)
+Z=GetSubTite(Y, I,Doses, Groups, Include,ID,cohort, Conservative,
+T1,Target,  Upper, Dose,  meanmu, meanslope,
+ MeanInts,  MeanSlopes ,varint,varbeta,phetero, Borrow,B)
+Z
 }
 \references{
 [1] Chapple and Thall (2017), Subgroup Specific Dose Finding in Phase I Clinical Trials Based on Time to Toxicity Within a Fixed Follow Up Period.

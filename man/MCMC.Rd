@@ -4,9 +4,27 @@
 \alias{MCMC}
 \title{Performs MCMC and returns needed values for dose-finding in a list.}
 \usage{
-MCMC(Y, I, Doses, Groups, T1, Target, Upper, Dose, meanmu, meanslope,
-  MeanInts, MeanSlopes, varint, varbeta, phetero, Stopped, NumPat, SubRout,
-  B)
+MCMC(
+  Y,
+  I,
+  Doses,
+  Groups,
+  T1,
+  Target,
+  Upper,
+  Dose,
+  meanmu,
+  meanslope,
+  MeanInts,
+  MeanSlopes,
+  varint,
+  varbeta,
+  phetero,
+  Stopped,
+  NumPat,
+  SubRout,
+  B
+)
 }
 \arguments{
 \item{Y}{Vector containing observed event or censoring times.}

@@ -4,9 +4,31 @@
 \alias{SimTrial1}
 \title{Simulates a Sub-TITE trial design}
 \usage{
-SimTrial1(nSims, Nmax, T1, Target, Dose, DoseStart, Upper, Accrue,
-  groupprob, Family, Param1, Param2, meanmu, meanslope, MeanInts,
-  MeanSlopes, varint, varbeta, phetero, NSep, NBorrow, cohort, FULLY)
+SimTrial1(
+  nSims,
+  Nmax,
+  T1,
+  Target,
+  Dose,
+  DoseStart,
+  Upper,
+  Accrue,
+  groupprob,
+  Family,
+  Param1,
+  Param2,
+  meanmu,
+  meanslope,
+  MeanInts,
+  MeanSlopes,
+  varint,
+  varbeta,
+  phetero,
+  NSep,
+  NBorrow,
+  cohort,
+  FULLY
+)
 }
 \arguments{
 \item{nSims}{Number of Trials to Simulate.}

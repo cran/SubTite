@@ -4,9 +4,27 @@
 \alias{MCMCSIM}
 \title{Performs MCMC and returns needed values for dose-finding in a list.}
 \usage{
-MCMCSIM(Y, I, Doses, Groups, T1, Target, Upper, Dose, meanmu, meanslope,
-  MeanInts, MeanSlopes, varint, varbeta, phetero, Stopped, NumPat, SubRout,
-  B)
+MCMCSIM(
+  Y,
+  I,
+  Doses,
+  Groups,
+  T1,
+  Target,
+  Upper,
+  Dose,
+  meanmu,
+  meanslope,
+  MeanInts,
+  MeanSlopes,
+  varint,
+  varbeta,
+  phetero,
+  Stopped,
+  NumPat,
+  SubRout,
+  B
+)
 }
 \arguments{
 \item{Y}{Vector containing observed event or censoring times.}
