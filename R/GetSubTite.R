@@ -262,7 +262,7 @@ GetSubTite=function(Y, I,Doses, Groups,  Include, ID, cohort,Conservative,T1, Ta
           if(which1<ncol(NumTreated)){
             ###We can still escalate
             ###Let's check to make sure that this dose level has the right number of fully evaluated patients
-            NUM  = sum( (Y[Doses==which1 & Groups==(k-1)]<=T1 & I[Doses==which1 & Groups==(k-1)]==0) | I[Doses==which1 & Groups==(k-1)]==1)
+            NUM  = sum( (Y[Doses==which1 & Groups==(k-1)]>=T1 & I[Doses==which1 & Groups==(k-1)]==0) | I[Doses==which1 & Groups==(k-1)]==1)
             ###Now re-write this with NUM
             NumTreated[k,which1]=NUM
 
