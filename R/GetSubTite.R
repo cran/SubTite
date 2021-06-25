@@ -1,5 +1,6 @@
 #' Gives the subgroup specific optimal dose vector.
-#'  Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.
+#'
+#' Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.
 #' @param Y Vector containing observed event or censoring times.
 #' @param I Vector containing event indicators (1 if patient experiences an event for a patient).
 #' @param Doses Vector containing numerical doses assigned to patients in the trial.
@@ -57,7 +58,7 @@
 #'  MeanInts,  MeanSlopes ,varint,varbeta,phetero, Borrow,B)
 #' Z
 #'@export
-GetSubTite=function(Y, I,Doses, Groups,  Include, ID, cohort,Conservative,T1, Target,
+GetSubTite=function(Y, I,Doses, Groups,  Include = rep(1,length(Y)), ID, cohort,Conservative,T1, Target,
                     Upper, Dose,  meanmu, meanslope,
                     MeanInts,  MeanSlopes ,varint,varbeta,phetero,Borrow,B){
 

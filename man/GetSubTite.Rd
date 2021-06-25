@@ -2,15 +2,14 @@
 % Please edit documentation in R/GetSubTite.R
 \name{GetSubTite}
 \alias{GetSubTite}
-\title{Gives the subgroup specific optimal dose vector.
- Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.}
+\title{Gives the subgroup specific optimal dose vector.}
 \usage{
 GetSubTite(
   Y,
   I,
   Doses,
   Groups,
-  Include,
+  Include = rep(1, length(Y)),
   ID,
   cohort,
   Conservative,
@@ -76,8 +75,7 @@ GetSubTite(
 Returns a list with two objects, a vector of optimal doses for each subgroup and matrix of posterior toxicity probabilities at each dose level within each subgroup.
 }
 \description{
-Gives the subgroup specific optimal dose vector.
- Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.
+Returns a list containing the optimal doses to enroll each subgroup at and the subgroups that should have their accrual suspended temporarily.
 }
 \examples{
 T1=28 ##Reference time for toxicity
