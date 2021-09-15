@@ -17,10 +17,10 @@
 #' @param MeanInts G-1 length vector of subgroup specific prior intercept means.
 #' @param MeanSlopes G-1 length vector of subgroup specific prior slope means.
 #' @param Family What distribution Family to simulate from. Options include: Exponential,Gamma, Lognormal, Uniform, Weibull.
-#' @param SimTruth List of 2 #Groups by #Doses matrices containing the true parameter values needed for simulating from different true time to toxicity distributions.
+#' @param SimTruth List of 2 #Groups by #Doses matrices containing the true parameter values needed for simulating from different true time to toxicity distributions. When a Uniform distribution is chosen, the user will instead supply the true toxicity probabilities for each dose/subgroup combination in both list entries. For a gamma distribution, the user will supply a matrix for the shape parameters for each dose and subgroup, and a second matrix for the rate parameters of each dose and subgroup.
 #' @param VarInt Prior Variance of Intercept Parameters.
 #' @param VarSlope Prior Variance of Slope Parameters.
-#' @param phetero Prior prob of clustering
+#' @param phetero Prior probability of clustering
 #' @param NSep Number of patients to assign based on no borrowing.
 #' @param NBorrow Number of patients to assign based on no clustering
 #' @param cohort Number of patients to enroll before escalating.
@@ -54,8 +54,8 @@
 #' meanmu=2.21
 #' meanslope=-.57
 #' ##Hypervectors for subgroup specific terms
-#' MeanInts = c(.46)
-#' MeanSlopes = c(.04)
+#' MeanInts = c(0,.46)
+#' MeanSlopes = c(0,.04)
 #' ##Hypervariances
 #' VarInt=5
 #' VarSlope=1
@@ -141,7 +141,7 @@ pmono=phetero
   ##Now check for errors...
 
 
-  ERRHOLD=c(length(Target), nrow(Param1), nrow(Param2), length(Upper), length(MeanInts)+1, length(MeanSlopes)+1)
+  ERRHOLD=c(length(Target), nrow(Param1), nrow(Param2), length(Upper), length(MeanInts), length(MeanSlopes))
 
   HOLD=0
   ##Check for errors in dimension specification
@@ -159,9 +159,6 @@ pmono=phetero
 
 
 
-  ##Repackage MeanInts and MeanSlopes
-  MeanInts=c(0,MeanInts)
-  MeanSlopes=c(0,MeanSlopes)
 
 
 

@@ -17,8 +17,8 @@
 #' @param meanslope Prior mean for baseline slope.
 #' @param MeanInts Vector of prior means for the group specific intercept parameters.
 #' @param MeanSlopes Vector of prior means for the group specific slope parameters.
-#' @param varint Prior variance for the intercept parameters.
-#' @param varbeta Prior variance for the slope parameters.
+#' @param VarInt Prior variance for the intercept parameters.
+#' @param VarSlope Prior variance for the slope parameters.
 #' @param phetero Prior probability of heterogeneous subgroups.
 #' @param Borrow Parameter to specify subgroup borrowing/clustering. 0=No borrowing, 1=Borrowing but no clustering, 2=Borrowing and clustering.
 #' @param B Number of Iterations to run for MCMC
@@ -37,10 +37,10 @@
 #' ##Hyperparameters
 #' meanmu=-0.4467184 ##Common Intercept hypermean
 #' meanslope= 0.8861634 ##Common slope hypermean
-#' MeanInts = -0.5205379 ##Group Intercept hypermeans
-#' MeanSlopes = 0.1888923 ##Group slope hyperneabs
-#' varint=5 #Prior Variance of the intercept betas
-#' varbeta=1 ##Prior Variance of slope betas
+#' MeanInts =c(0, -0.5205379) ##Group Intercept hypermeans
+#' MeanSlopes = c(0, 0.1888923) ##Group slope hyperneabs
+#' VarInt=5 #Prior Variance of the intercept betas
+#' VarSlope=1 ##Prior Variance of slope betas
 #' phetero=.9 ##Prior Probability of hetergeneity
 #' Borrow=0 ##Borrowing specification, 0=none, 1=some, 2=clustering.
 #' B=5000 ##Number of iterations
@@ -55,14 +55,15 @@
 #' ID=1:length(Y)
 #' Z=GetSubTite(Y, I,Doses, Groups, Include,ID,cohort, Conservative,
 #' T1,Target,  Upper, Dose,  meanmu, meanslope,
-#'  MeanInts,  MeanSlopes ,varint,varbeta,phetero, Borrow,B)
+#'  MeanInts,  MeanSlopes ,VarInt,VarSlope,phetero, Borrow,B)
 #' Z
 #'@export
 GetSubTite=function(Y, I,Doses, Groups,  Include = rep(1,length(Y)), ID, cohort,Conservative,T1, Target,
                     Upper, Dose,  meanmu, meanslope,
-                    MeanInts,  MeanSlopes ,varint,varbeta,phetero,Borrow,B){
+                    MeanInts,  MeanSlopes ,VarInt,VarSlope,phetero,Borrow,B){
 
-
+varint=VarInt
+varbeta=VarSlope
 
   Doses2=Doses
 
@@ -86,7 +87,7 @@ GetSubTite=function(Y, I,Doses, Groups,  Include = rep(1,length(Y)), ID, cohort,
 
 
 
-  ERRHOLD=c(length(Target), length(Upper), length(MeanInts)+1, length(MeanSlopes)+1)
+  ERRHOLD=c(length(Target), length(Upper), length(MeanInts), length(MeanSlopes))
 
   HOLD=0
   ##Check for errors in dimension specification
@@ -125,8 +126,8 @@ GetSubTite=function(Y, I,Doses, Groups,  Include = rep(1,length(Y)), ID, cohort,
     DESIGN[[6]]=meanslope
     DESIGN[[7]]=MeanInts
     DESIGN[[8]]=MeanSlopes
-    DESIGN[[9]]=varint
-    DESIGN[[10]]=varbeta
+    DESIGN[[9]]=VarInt
+    DESIGN[[10]]=VarSlope
     DESIGN[[12]]=Borrow
     DESIGN[[13]]=T1
     DESIGN[[14]]=B
@@ -284,9 +285,6 @@ GetSubTite=function(Y, I,Doses, Groups,  Include = rep(1,length(Y)), ID, cohort,
 
 
 
-      ##Repackage MeanInts and MeanSlopes
-      MeanInts=c(0,MeanInts)
-      MeanSlopes=c(0,MeanSlopes)
       Stopped=rep(0,nrow(DoseTried))
       ##This matrix contains posterior mean toxicity probabilities at each dose for each subgroup.
       ##The last column in the matrix has whether or not each group should be stopped.
@@ -364,7 +362,7 @@ Decisions for next patient or optimal dose.
 
       for(k in 1:length(Stopped)){
         if(!is.na(OptDose[k])){
-          cat(paste0("Next reccomended dose level for subgroup ",k,": Dose ",OptDose[k],"
+          cat(paste0("Next recomended dose level for subgroup ",k,": Dose ",OptDose[k],"
 "))
         }else{
           cat(paste0("Subgroup ",k," is too toxic, do not enroll these patients at this time.

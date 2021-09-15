@@ -9,7 +9,7 @@ GetParams(Family, ParamNum, Param, GroupProb, T1)
 \arguments{
 \item{Family}{What distribution Family to simulate from. Options include: Exponential,Gamma, Lognormal, Uniform, Weibull.}
 
-\item{ParamNum}{Parameter index for user set value.}
+\item{ParamNum}{Parameter index for user set value. For example, ParamNum=1 for a Gamma distribution means that the user will supply the shape parameters in the param matrix. If ParamNum=2, the user will supply the rate parameters in the param matrix.}
 
 \item{Param}{#Groups X #Doses Matrix containing one parameter for each subgroup and dose.}
 

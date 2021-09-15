@@ -21,8 +21,8 @@ GetSubTite(
   meanslope,
   MeanInts,
   MeanSlopes,
-  varint,
-  varbeta,
+  VarInt,
+  VarSlope,
   phetero,
   Borrow,
   B
@@ -61,9 +61,9 @@ GetSubTite(
 
 \item{MeanSlopes}{Vector of prior means for the group specific slope parameters.}
 
-\item{varint}{Prior variance for the intercept parameters.}
+\item{VarInt}{Prior variance for the intercept parameters.}
 
-\item{varbeta}{Prior variance for the slope parameters.}
+\item{VarSlope}{Prior variance for the slope parameters.}
 
 \item{phetero}{Prior probability of heterogeneous subgroups.}
 
@@ -89,10 +89,10 @@ Conservative = 1 ##Conservative escalation
 ##Hyperparameters
 meanmu=-0.4467184 ##Common Intercept hypermean
 meanslope= 0.8861634 ##Common slope hypermean
-MeanInts = -0.5205379 ##Group Intercept hypermeans
-MeanSlopes = 0.1888923 ##Group slope hyperneabs
-varint=5 #Prior Variance of the intercept betas
-varbeta=1 ##Prior Variance of slope betas
+MeanInts =c(0, -0.5205379) ##Group Intercept hypermeans
+MeanSlopes = c(0, 0.1888923) ##Group slope hyperneabs
+VarInt=5 #Prior Variance of the intercept betas
+VarSlope=1 ##Prior Variance of slope betas
 phetero=.9 ##Prior Probability of hetergeneity
 Borrow=0 ##Borrowing specification, 0=none, 1=some, 2=clustering.
 B=5000 ##Number of iterations
@@ -107,7 +107,7 @@ Include <- rep(1,7)
 ID=1:length(Y)
 Z=GetSubTite(Y, I,Doses, Groups, Include,ID,cohort, Conservative,
 T1,Target,  Upper, Dose,  meanmu, meanslope,
- MeanInts,  MeanSlopes ,varint,varbeta,phetero, Borrow,B)
+ MeanInts,  MeanSlopes ,VarInt,VarSlope,phetero, Borrow,B)
 Z
 }
 \references{

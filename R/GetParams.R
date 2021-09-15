@@ -1,6 +1,6 @@
-#'Obtains true simulation parameters for each supported distribution function to correspond to a probability of the truth by time T1.
+#' Obtains true simulation parameters for each supported distribution function to correspond to a probability of the truth by time T1.
 #' @param Family What distribution Family to simulate from. Options include: Exponential,Gamma, Lognormal, Uniform, Weibull.
-#' @param ParamNum Parameter index for user set value.
+#' @param ParamNum Parameter index for user set value. For example, ParamNum=1 for a Gamma distribution means that the user will supply the shape parameters in the param matrix. If ParamNum=2, the user will supply the rate parameters in the param matrix.
 #' @param Param #Groups X #Doses Matrix containing one parameter for each subgroup and dose.
 #' @param GroupProb #Groups X #Doses Matrix containing the true toxicity probability by time T1.
 #' @param T1 Toxicity observation window.

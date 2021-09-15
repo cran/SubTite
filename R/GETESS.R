@@ -6,8 +6,9 @@
 #' @param meanslope Prior mean for baseline slope.
 #' @param MeanInts Vector of prior means for the group specific intercept parameters.
 #' @param MeanSlopes Vector of prior means for the group specific slope parameters.
-#' @param varint Prior variance for the intercept parameters.
-#' @param varbeta Prior variance for the slope parameters.
+#' @param VarInt Prior variance for the intercept parameters.
+#' @param VarSlope Prior variance for the slope parameters.
+#' @param phetero Prior probability of clustering
 #' @return Returns the nonlinear regression model whos parameter estimates will be used as prior means for the SubTITE Design.
 #' @references
 #' [1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination.
@@ -15,21 +16,32 @@
 #' ###Specify the prior hypermeans
 #' meanmu=-.5
 #' meanslope=-.05
-#' MeanInts = c(-.5,-.1)
-#' MeanSlopes = c(.1,0)
+#' MeanInts = c(0,-.5,-.1)
+#' MeanSlopes = c(0,.1,0)
 #' Dose=sort(rnorm(5))
-#' varint=5
-#' varbeta=1
-#' GetESS(Dose,meanmu,meanslope,MeanInts,MeanSlopes,varint,varbeta)
+#' VarInt=5
+#' VarSlope=1
+#' phetero=.9
+#' GetESS(Dose,meanmu,meanslope,MeanInts,MeanSlopes,VarInt,VarSlope,phetero)
 #' @export
-GetESS=function(Dose,meanmu,meanslope,MeanInts,MeanSlopes,varint,varbeta){
+GetESS=function(Dose,meanmu,meanslope,MeanInts,MeanSlopes,VarInt,VarSlope,phetero){
 
-  prob1=.9
+
+  prob1=phetero
+  ##Remove 0s
 
   nDose=length(Dose)
 
-  varint1=varint
-  varbeta1=varbeta
+
+  ##Take off the first entry to match old values
+  MeanInts=MeanInts[-1]
+  MeanSlopes=MeanSlopes[-1]
+
+###Set up the other values
+  varbeta=VarSlope
+  varint=VarInt
+  varint1=VarInt
+  varbeta1=VarSlope
 
   estBetaParams <- function(mu, var) {
     alpha <- ((1 - mu) / var - 1 / mu) * mu ^ 2

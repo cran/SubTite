@@ -4,7 +4,16 @@
 \alias{GetESS}
 \title{Determines Prior ESS for fixed values of sigma_alpha^2 and sigmabeta^2}
 \usage{
-GetESS(Dose, meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta)
+GetESS(
+  Dose,
+  meanmu,
+  meanslope,
+  MeanInts,
+  MeanSlopes,
+  VarInt,
+  VarSlope,
+  phetero
+)
 }
 \arguments{
 \item{Dose}{Vector containing standardized doses.}
@@ -17,9 +26,11 @@ GetESS(Dose, meanmu, meanslope, MeanInts, MeanSlopes, varint, varbeta)
 
 \item{MeanSlopes}{Vector of prior means for the group specific slope parameters.}
 
-\item{varint}{Prior variance for the intercept parameters.}
+\item{VarInt}{Prior variance for the intercept parameters.}
 
-\item{varbeta}{Prior variance for the slope parameters.}
+\item{VarSlope}{Prior variance for the slope parameters.}
+
+\item{phetero}{Prior probability of clustering}
 }
 \value{
 Returns the nonlinear regression model whos parameter estimates will be used as prior means for the SubTITE Design.
@@ -31,12 +42,13 @@ Uses the prior means for the intercept and slope parameters and the number of do
 ###Specify the prior hypermeans
 meanmu=-.5
 meanslope=-.05
-MeanInts = c(-.5,-.1)
-MeanSlopes = c(.1,0)
+MeanInts = c(0,-.5,-.1)
+MeanSlopes = c(0,.1,0)
 Dose=sort(rnorm(5))
-varint=5
-varbeta=1
-GetESS(Dose,meanmu,meanslope,MeanInts,MeanSlopes,varint,varbeta)
+VarInt=5
+VarSlope=1
+phetero=.9
+GetESS(Dose,meanmu,meanslope,MeanInts,MeanSlopes,VarInt,VarSlope,phetero)
 }
 \references{
 [1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination.

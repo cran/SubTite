@@ -60,11 +60,11 @@ SimTrial(
 
 \item{VarSlope}{Prior Variance of Slope Parameters.}
 
-\item{phetero}{Prior prob of clustering}
+\item{phetero}{Prior probability of clustering}
 
 \item{Family}{What distribution Family to simulate from. Options include: Exponential,Gamma, Lognormal, Uniform, Weibull.}
 
-\item{SimTruth}{List of 2 #Groups by #Doses matrices containing the true parameter values needed for simulating from different true time to toxicity distributions.}
+\item{SimTruth}{List of 2 #Groups by #Doses matrices containing the true parameter values needed for simulating from different true time to toxicity distributions. When a Uniform distribution is chosen, the user will instead supply the true toxicity probabilities for each dose/subgroup combination in both list entries. For a gamma distribution, the user will supply a matrix for the shape parameters for each dose and subgroup, and a second matrix for the rate parameters of each dose and subgroup.}
 
 \item{NSep}{Number of patients to assign based on no borrowing.}
 
@@ -108,8 +108,8 @@ FULL=0
 meanmu=2.21
 meanslope=-.57
 ##Hypervectors for subgroup specific terms
-MeanInts = c(.46)
-MeanSlopes = c(.04)
+MeanInts = c(0,.46)
+MeanSlopes = c(0,.04)
 ##Hypervariances
 VarInt=5
 VarSlope=1

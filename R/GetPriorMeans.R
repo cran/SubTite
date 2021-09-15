@@ -1,20 +1,20 @@
 #' Calibrates prior means for Dose Finding Trial
 #'
 #'  Uses the clinician elicited prior reference probabilities for each subgroup and dose to obtain prior means for the Bayesian logistic regression model used in the SubTite trial design.
-#' @param Clinician #Groups X #Doses matrix containing the elicited prior toxicity probabilities at the reference time for each dose and subgroup.
+#' @param Prior #Groups X #Doses matrix containing the elicited prior toxicity probabilities at the reference time for each dose and subgroup.
 #' @param Dose Vector containing standardized doses.
-#' @return Returns the nonlinear regression model whos parameter estimates will be used as prior means for the SubTITE Design.
+#' @return Returns the a list containing the nonlinear regression model whos parameter estimates will be used as prior means for the SubTITE Design.
 #' @references
 #' [1] Chapple and Thall (2017), Subgroup-specific dose finding in phase I clinical trials based on time to toxicity allowing adaptive subgroup combination
 #' @examples
 #' ##Specify elicited reference toxicity probabilities
-#' Clinician = matrix(c(.2,.3,.4,.5,.6,.1,.2,.3,.4,.5,.05,.1,.15,.2,.3),byrow=TRUE,nrow=3)
+#' Prior = matrix(c(.2,.3,.4,.5,.6,.1,.2,.3,.4,.5,.05,.1,.15,.2,.3),byrow=TRUE,nrow=3)
 #' Dose=sort(rnorm(5))
-#' GetPriorMeans(Clinician,Dose)
+#' GetPriorMeans(Prior,Dose)
 #' @export
-GetPriorMeans = function(Clinician,Dose){
+GetPriorMeans = function(Prior,Dose){
 
-  X=Clinician
+  X=Prior
   nGroups=nrow(X)
 
   Y = rep(NA,length(X))
@@ -65,11 +65,8 @@ GetPriorMeans = function(Clinician,Dose){
 
 
 
-    m1 <- nls(Y ~ alpha + alpha1*Group1+exp(beta+beta1*Group1)*DOSEVEC,
+    m1 <- nls(Y ~ alpha +exp(beta+beta1*Group1)*DOSEVEC+ alpha1*Group1,
               start = list(alpha=0,alpha1=0,beta=0,beta1=0))
-
-
-    print(m1)
 
 
 
@@ -128,6 +125,10 @@ GetPriorMeans = function(Clinician,Dose){
 
 
   }
+
+
+
+
 
 
 
@@ -205,8 +206,24 @@ GetPriorMeans = function(Clinician,Dose){
 
 
 
+  A1=summary(m1)$parameters[,1]
+
+  meanmu=A1[1]
+  meanslope=A1[G+1]
+  MeanInts = c(0,A1[2:G])
+  MeanSlopes = c(0,A1[(G+2):length(A1)])
+
+
+###MAke List to Return
+  RETURN_LIST = as.list(rep(NA,4))
+  names(RETURN_LIST)=c("meanmu","MeanInts", "meanslope","MeanSlopes")
+  RETURN_LIST[[1]]=meanmu
+  RETURN_LIST[[2]]=MeanInts
+  RETURN_LIST[[3]]=meanslope
+  RETURN_LIST[[4]]=MeanSlopes
 
 
 
 
+return(RETURN_LIST)
 }
